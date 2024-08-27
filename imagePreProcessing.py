@@ -4,6 +4,7 @@ import os
 
 
 
+
 # Transform an IFM Image to a blurred graylevel Image for further processing.
 def TransformToBlurredGray(image):
     gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
@@ -47,17 +48,43 @@ def bmpToProbeOnly(image):
         alpha_channel = mask  
         return cv.merge((b, g, r, alpha_channel))
 
+
 def saveBMPtoFolder(image):
-    folder='sampleOnlyBMP'
+    """
+    Saves a BMP image to a specified folder with a unique filename.
+    If 'probeOnly_0.bmp' already exists, it appends a number to the filename.
+
+    Args:
+        image: The image to save.
+
+    Returns:
+        str: The full path to the saved file.
+    """
+    folder = 'sampleOnlyBMP'
     if not os.path.exists(folder):
         os.makedirs(folder)
-    filename = os.path.join(folder, f'probeOnly.bmp')
-    cv.imwrite(filename, image)    
+
+    # Start with the base filename
+    base_filename = 'probeOnly'
+    counter = 0
+    extension = '.bmp'
+    filename = os.path.join(folder, f'{base_filename}_{counter}{extension}')
+
+    # Check if the file already exists and if so, number it
+
+    while os.path.exists(filename):
+        filename = os.path.join(folder, f'{base_filename}_{counter}{extension}')
+        counter += 1
+
+    # Save the image
+    cv.imwrite(filename, image)
     
+    return filename
+    
+def finishedProcessing(filename):
+    progressed_filename = saveBMPtoFolder(bmpToProbeOnly(image=cv.imread(filename)))
+    return progressed_filename
 
-
-filename = os.path.join(f'originalFMData',f'texture1.bmp')
-saveBMPtoFolder(bmpToProbeOnly(image=cv.imread(filename)))
 
 # # Bild auf gewünschte Größe skalieren
 # width = 1000  # gewünschte Breite
