@@ -1,27 +1,31 @@
 import cv2 as cv
 import numpy as np
 import os
-import imagePreProcessing 
+from imagePreProcessing import finishedProcessing as imageProcessing
+
 
 # Load picture and transform to blurred gray
-folder = 'sampleOnlyBMP'
-filename = os.path.join(folder, f'probeOnly.bmp')
-image = cv.imread(filename)
-gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-ksize = (5, 5)  # Kernelgröße
-sigmaX = 1.0    # Standardabweichung in X-Richtung
-blurred_image = cv.GaussianBlur(gray, ksize, sigmaX)
+def loadPicture(filenameAndPath):
+    image = cv.imread(filenameAndPath)
+    gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+    ksize = (5, 5)  # Kernelgröße
+    sigmaX = 1.0  # Standardabweichung in X-Richtung
+    blurred_image = cv.GaussianBlur(gray, ksize, sigmaX)
 
-
-
+    return image, blurred_image
 
 
 # use HoughCircles to find possible defects
-def findCircles(minimalDiameter, maximalDiameter):
+def findCircles(minimalDiameter, maximalDiameter, blurred_image):
     circles = cv.HoughCircles(
-    blurred_image, 
-    cv.HOUGH_GRADIENT, dp=1, minDist=20,
-    param1=50, param2=27, minRadius= int(minimalDiameter / 2), maxRadius= int(maximalDiameter / 2)
+        blurred_image,
+        cv.HOUGH_GRADIENT,
+        dp=1,
+        minDist=20,
+        param1=50,
+        param2=27,
+        minRadius=int(minimalDiameter / 2),
+        maxRadius=int(maximalDiameter / 2),
     )
     return circles
 
@@ -53,32 +57,64 @@ def merge_and_remove_duplicates(circles1, circles2):
 
     return unique_circles
 
+
 # create an Array of possible defects with different parameters to cover more possibilitys
 
-def parameterRange(minimalDiameter, maximalDiameter):
+
+def parameterRange(minimalDiameter, maximalDiameter, blurred_image):
     startDiameter = 19
-    uniqueCircles = findCircles(minimalDiameter, startDiameter)
+    uniqueCircles = findCircles(minimalDiameter, startDiameter, blurred_image)
     for currentMaxDiameter in range(startDiameter + 1, maximalDiameter):
-        currentCircles = findCircles(int(currentMaxDiameter *0.1), currentMaxDiameter)
+        currentCircles = findCircles(
+            int(currentMaxDiameter * 0.1), currentMaxDiameter, blurred_image
+        )
         uniqueCircles = merge_and_remove_duplicates(uniqueCircles, currentCircles)
-   
+
     return uniqueCircles
 
 
+def saveCircleROIsToBMP(circle_rois, subfolder_name, base_folder="detectedErrors"):
+    """
+    Saves each ROI in circle_rois as a BMP file in a specified subfolder within 'detectedErrors'.
 
-# saves the found defects 
-def saveCircleROIsToBMP(circle_rois, folder='detectedErrors'):
-    # creates a folder if it doesn´t already exist
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-    
+    Args:
+        circle_rois (list): A list of ROI images to save.
+        subfolder_name (str): The name of the subfolder where the files will be saved.
+        base_folder (str, optional): The base folder where the subfolder will be created. Defaults to 'detectedErrors'.
+
+    Returns:
+        None
+    """
+    # Normalize the path to handle any inconsistencies
+    normalized_path = os.path.normpath(subfolder_name)
+    # Extract the last folder name
+    last_folder = os.path.basename(normalized_path)
+    # Create the full path to the subfolder
+    folder_path = os.path.join(base_folder, last_folder)
+
+    # Creates the subfolder if it doesn’t already exist
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+    # Save each ROI as a BMP file
     for idx, roi in enumerate(circle_rois):
-        filename = os.path.join(folder, f'circle_roi_{idx + 1}.bmp')
+        filename = os.path.join(folder_path, f"circle_roi_{idx + 1}.bmp")
         cv.imwrite(filename, roi)
-    print(f"Alle ROIs wurden im Ordner '{folder}' als .BMP-Dateien gespeichert.")
+
+    print(f"Alle ROIs wurden im Ordner '{folder_path}' als .BMP-Dateien gespeichert.")
+
 
 # draws circles for visual representation and uses saveCircleROIsToBMP to save the defects for later use
-def checkAndDrawCircles(workImage, circles, minimalDiameter, maximalDiameter, maximalMeanIntensity, imageCopy):
+def checkAndDrawCircles(
+    workImage,
+    circles,
+    minimalDiameter,
+    maximalDiameter,
+    maximalMeanIntensity,
+    imageCopy,
+    filename,
+    drawcircles,
+):
     circle_rois = []
     if circles is not None:
         circles = np.uint16(np.around(circles))
@@ -86,50 +122,123 @@ def checkAndDrawCircles(workImage, circles, minimalDiameter, maximalDiameter, ma
         for i in circles[0, :]:
             center = (i[0], i[1])  # Mittelpunkt des Kreises
             radius = i[2]  # Radius des Kreises
-            
+
             # Schneide den Bereich um den Kreis aus
-            circle_roi = workImage[center[1]-radius:center[1]+radius, center[0]-radius:center[0]+radius]
-            circle_roi_save = imageCopy[center[1]-(radius+3):center[1]+(radius+3), center[0]-(radius+3):center[0]+(radius+3)]
+            circle_roi = workImage[
+                center[1] - radius : center[1] + radius,
+                center[0] - radius : center[0] + radius,
+            ]
+            circle_roi_save = imageCopy[
+                center[1] - (radius + 3) : center[1] + (radius + 3),
+                center[0] - (radius + 3) : center[0] + (radius + 3),
+            ]
             # Berechne den Mittelwert und die Standardabweichung innerhalb des Kreises
             mean_intensity = np.mean(circle_roi)
             std_intensity = np.std(circle_roi)
 
             # Prüfe, ob der Mittelwert der Intensität innerhalb des Kreises niedrig ist (dunkel) und der Durchmesser im gewünschten Bereich liegt
-            if mean_intensity < maximalMeanIntensity and minimalDiameter <= 2 * radius <= maximalDiameter:
+            if (
+                mean_intensity < maximalMeanIntensity
+                and minimalDiameter <= 2 * radius <= maximalDiameter
+            ):
                 errorCount += 1
-                cv.circle(image, center, radius + 5, (0, 255, 0), 4)  # Umrandung des Kreises
                 circle_rois.append(circle_roi_save)  # ROI hinzufügen
+                if drawcircles:
+                    cv.circle(
+                        imageCopy, center, radius + 5, (0, 255, 0), 4
+                    )  # Umrandung des Kreises
 
-    saveCircleROIsToBMP(circle_rois)  # Speichern der ROIs
+    if not drawcircles:
+        saveCircleROIsToBMP(circle_rois, subfolder_name=filename)  # Speichern der ROIs
     return errorCount
 
-# print on console to check the parameters and how they perform. 
+
+# print on console to check the parameters and how they perform.
 # only use in combinaton with visual feedback. More found defects doesn´t automatically mean better performance.
-def errorCountChecker(absolutMinimalDiameter, absolutMaximalDiameter, absolutMaximalMeanIntensity):
+def errorCountChecker(
+    absolutMinimalDiameter,
+    absolutMaximalDiameter,
+    absolutMaximalMeanIntensity,
+    numberOfErrorsDetected,
+):
+    print(
+        "Number of Defects detected with \n\t minimal Diameter = ",
+        absolutMinimalDiameter,
+        "\n\t maximal Diameter = ",
+        absolutMaximalDiameter,
+        "\n\t maximal Mean Intensity = ",
+        absolutMaximalMeanIntensity,
+        "\n\t Defects =",
+        numberOfErrorsDetected,
+    )
 
-    print("Number of Errors Detected with \n\t minimal Diameter = ", absolutMinimalDiameter, "\n\t maximal Diameter = ", absolutMaximalDiameter, "\n\t maximal Mean Intensity = ", absolutMaximalMeanIntensity, "\n\t Errors =", numberOfErrorsDetected)
+
+def find_largest_file(directory):
+    """
+    Finds the largest file in the specified directory.
+
+    Args:
+        directory (str): The path to the directory to search.
+
+    Returns:
+        str: The full path to the largest file found, or None if the directory is empty or no files are found.
+    """
+    largest_file = None
+    max_size = 0
+
+    # Walk through the directory
+    for root, _, files in os.walk(directory):
+        for file in files:
+            file_path = os.path.join(root, file)
+            file_size = os.path.getsize(file_path)
+
+            # Update if a larger file is found
+            if file_size > max_size:
+                max_size = file_size
+                largest_file = file_path
+
+    return largest_file
 
 
+def finishedSearch(folderpath, drawcircles):
+    filenameAndPath = find_largest_file(folderpath)
+    # filenameAndPath = os.path.join(folderpath, f'probeOnly.bmp')
+    filenameAndPath = imageProcessing(filenameAndPath)
 
+    image, blurred_image = loadPicture(filenameAndPath=filenameAndPath)
 
-# defining parameters
-absolutMinimalDiameter = 6
-absolutMaximalDiameter = 60
-absolutMaximalMeanIntensity = 400
+    # defining parameters
+    absolutMinimalDiameter = 6
+    absolutMaximalDiameter = 60
+    absolutMaximalMeanIntensity = 400
 
+    circles = parameterRange(
+        absolutMinimalDiameter, absolutMaximalDiameter, blurred_image
+    )
+    numberOfErrorsDetected = checkAndDrawCircles(
+        workImage=blurred_image,
+        circles=circles,
+        minimalDiameter=absolutMinimalDiameter,
+        maximalDiameter=absolutMaximalDiameter,
+        maximalMeanIntensity=absolutMaximalMeanIntensity,
+        imageCopy=image,
+        filename=folderpath,
+        drawcircles=drawcircles,
+    )
+    errorCountChecker(
+        absolutMinimalDiameter,
+        absolutMaximalDiameter,
+        absolutMaximalMeanIntensity,
+        numberOfErrorsDetected,
+    )
 
-circles = parameterRange(absolutMinimalDiameter, absolutMaximalDiameter)
-numberOfErrorsDetected = checkAndDrawCircles(workImage= blurred_image, circles= circles,minimalDiameter= absolutMinimalDiameter,maximalDiameter= absolutMaximalDiameter,maximalMeanIntensity= absolutMaximalMeanIntensity, imageCopy= image)
-errorCountChecker(absolutMinimalDiameter, absolutMaximalDiameter, absolutMaximalMeanIntensity)
+    # scales Picture for output
+    width = 800
+    height = int((width / image.shape[1]) * image.shape[0])  # scaling height to width
+    resized_image = cv.resize(image, (width, height))
 
-
-
-# scales Picture for output
-width = 800  # gewünschte Breite
-height = int((width / image.shape[1]) * image.shape[0])  # Höhe entsprechend skalieren
-resized_image = cv.resize(image, (width, height))
-
-# shows picture
-cv.imshow('Detected Defects', resized_image)
-cv.waitKey(0)
-cv.destroyAllWindows()
+    # shows picture
+    if drawcircles:
+        cv.imshow("Detected Defects", resized_image)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
