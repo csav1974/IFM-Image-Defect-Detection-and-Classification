@@ -101,7 +101,7 @@ def saveCircleROIsToBMP(circle_rois, subfolder_name, base_folder="detectedErrors
         filename = os.path.join(folder_path, f"circle_roi_{idx + 1}.bmp")
         cv.imwrite(filename, roi)
 
-    print(f"Alle ROIs wurden im Ordner '{folder_path}' als .BMP-Dateien gespeichert.")
+    print(f"All found Defects were stored in '{folder_path}' as .BMPs")
 
 
 # draws circles for visual representation and uses saveCircleROIsToBMP to save the defects for later use
@@ -135,7 +135,6 @@ def checkAndDrawCircles(
             # Berechne den Mittelwert und die Standardabweichung innerhalb des Kreises
             mean_intensity = np.mean(circle_roi)
             std_intensity = np.std(circle_roi)
-
             # Prüfe, ob der Mittelwert der Intensität innerhalb des Kreises niedrig ist (dunkel) und der Durchmesser im gewünschten Bereich liegt
             if (
                 mean_intensity < maximalMeanIntensity
@@ -210,7 +209,7 @@ def finishedSearch(folderpath, drawcircles):
     # defining parameters
     absolutMinimalDiameter = 6
     absolutMaximalDiameter = 60
-    absolutMaximalMeanIntensity = 400
+    absolutMaximalMeanIntensity = 150
 
     circles = parameterRange(
         absolutMinimalDiameter, absolutMaximalDiameter, blurred_image
@@ -242,3 +241,5 @@ def finishedSearch(folderpath, drawcircles):
         cv.imshow("Detected Defects", resized_image)
         cv.waitKey(0)
         cv.destroyAllWindows()
+
+        
