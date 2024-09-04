@@ -4,6 +4,7 @@ from tkinter import filedialog, messagebox
 from tkinter import ttk
 from threading import Thread
 from WiskersDetection import finishedSearch
+from chippingDefectDetection import finishedSearchChipping
 
 
 # Main application window
@@ -28,6 +29,12 @@ class MainApp:
             self.folder_frame, text="Run", command=self.start_processing
         )
         self.run_button.grid(row=2, column=0, padx=5, pady=5)
+
+        # Quit button
+        self.quit_button = ttk.Button(
+            self.folder_frame, text="Quit", command=root.quit
+        )
+        self.quit_button.grid(row=3, column=0, padx=5, pady=5)
 
         # Label and progress bar for loading indicator
         self.loading_frame = ttk.Frame(root, padding="10")
@@ -66,8 +73,8 @@ class MainApp:
     def run_processing(self):
         """Runs the image processing and hides the loading indicator."""
         try:
-            finishedSearch(
-                self.selected_folder, drawcircles=True
+            finishedSearchChipping(
+                self.selected_folder, show_Image=False
             )  # drawcircles=True shows found defects, drawcircles False saves all found defekts
 
         except Exception as e:

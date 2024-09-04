@@ -25,7 +25,8 @@ def findCircles(minimalDiameter, maximalDiameter, image):
 
 
 # takes the image and the blurred Version and matches it to the original image to create a image thats only the Probe with anything else black
-def bmpToProbeOnly(image):
+def bmpToProbeOnly(filename):
+    image=cv.imread(filename)
     blurredImage = TransformToBlurredGray(image)
     circles = findCircles(3500,5000, blurredImage)
     if circles is not None:
@@ -49,7 +50,7 @@ def bmpToProbeOnly(image):
         return cv.merge((b, g, r, alpha_channel))
 
 
-def saveBMPtoFolder(image):
+def saveBMPtoFolder(image, input_folder):
     """
     Saves a BMP image to a specified folder with a unique filename.
     If 'probeOnly_0.bmp' already exists, it appends a number to the filename.
@@ -64,25 +65,19 @@ def saveBMPtoFolder(image):
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    # Start with the base filename
-    base_filename = 'probeOnly'
-    counter = 0
+    # create Filename based on the folder it comes from
+    base_filename = os.path.basename(input_folder)
     extension = '.bmp'
-    filename = os.path.join(folder, f'{base_filename}_{counter}{extension}')
+    filename = os.path.join(folder, f'{base_filename}{extension}')
 
-    # Check if the file already exists and if so, number it
-
-    while os.path.exists(filename):
-        filename = os.path.join(folder, f'{base_filename}_{counter}{extension}')
-        counter += 1
-
+    print(f"saved to {filename}")
     # Save the image
     cv.imwrite(filename, image)
     
     return filename
     
-def finishedProcessing(filename):
-    progressed_filename = saveBMPtoFolder(bmpToProbeOnly(image=cv.imread(filename)))
+def finishedProcessing(filename, folderpath):
+    progressed_filename = saveBMPtoFolder(image= bmpToProbeOnly(filename), input_folder= folderpath)
     return progressed_filename
 
 

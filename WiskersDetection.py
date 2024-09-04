@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 import os
 from imagePreProcessing import finishedProcessing as imageProcessing
+import filemanagement
 
 
 # Load picture and transform to blurred gray
@@ -120,10 +121,9 @@ def checkAndDrawCircles(
         circles = np.uint16(np.around(circles))
         errorCount = 0
         for i in circles[0, :]:
-            center = (i[0], i[1])  # Mittelpunkt des Kreises
-            radius = i[2]  # Radius des Kreises
-
-            # Schneide den Bereich um den Kreis aus
+            center = (i[0], i[1])  # Center of Circle
+            radius = i[2]  # Radius of Circle
+            # Cutting area around Center
             circle_roi = workImage[
                 center[1] - radius : center[1] + radius,
                 center[0] - radius : center[0] + radius,
@@ -132,23 +132,23 @@ def checkAndDrawCircles(
                 center[1] - (radius + 3) : center[1] + (radius + 3),
                 center[0] - (radius + 3) : center[0] + (radius + 3),
             ]
-            # Berechne den Mittelwert und die Standardabweichung innerhalb des Kreises
+            # Calculating Mean
             mean_intensity = np.mean(circle_roi)
-            std_intensity = np.std(circle_roi)
-            # Prüfe, ob der Mittelwert der Intensität innerhalb des Kreises niedrig ist (dunkel) und der Durchmesser im gewünschten Bereich liegt
+            # std_intensity = np.std(circle_roi)
+            # check if Mean intensity and radius is under the threshold 
             if (
                 mean_intensity < maximalMeanIntensity
                 and minimalDiameter <= 2 * radius <= maximalDiameter
             ):
                 errorCount += 1
-                circle_rois.append(circle_roi_save)  # ROI hinzufügen
+                circle_rois.append(circle_roi_save)  # add ROI to List
                 if drawcircles:
                     cv.circle(
                         imageCopy, center, radius + 5, (0, 255, 0), 4
-                    )  # Umrandung des Kreises
+                    )  # draws Circle on IMage for representation
 
     if not drawcircles:
-        saveCircleROIsToBMP(circle_rois, subfolder_name=filename)  # Speichern der ROIs
+        filemanagement.saveROIsToBMP(circle_rois, defectType= filemanagement.DefectType.WHISKERS, subfolder_name=filename)  # saves ROIs
     return errorCount
 
 
@@ -172,37 +172,11 @@ def errorCountChecker(
     )
 
 
-def find_largest_file(directory):
-    """
-    Finds the largest file in the specified directory.
 
-    Args:
-        directory (str): The path to the directory to search.
-
-    Returns:
-        str: The full path to the largest file found, or None if the directory is empty or no files are found.
-    """
-    largest_file = None
-    max_size = 0
-
-    # Walk through the directory
-    for root, _, files in os.walk(directory):
-        for file in files:
-            file_path = os.path.join(root, file)
-            file_size = os.path.getsize(file_path)
-
-            # Update if a larger file is found
-            if file_size > max_size:
-                max_size = file_size
-                largest_file = file_path
-
-    return largest_file
-
-
-def finishedSearch(folderpath, drawcircles):
-    filenameAndPath = find_largest_file(folderpath)
+def finishedSearch(folderpath, show_Image):
+    filenameAndPath = filemanagement.find_largest_file(folderpath)
     # filenameAndPath = os.path.join(folderpath, f'probeOnly.bmp')
-    filenameAndPath = imageProcessing(filenameAndPath)
+    filenameAndPath = imageProcessing(filenameAndPath, folderpath)
 
     image, blurred_image = loadPicture(filenameAndPath=filenameAndPath)
 
@@ -222,7 +196,7 @@ def finishedSearch(folderpath, drawcircles):
         maximalMeanIntensity=absolutMaximalMeanIntensity,
         imageCopy=image,
         filename=folderpath,
-        drawcircles=drawcircles,
+        drawcircles=show_Image,
     )
     errorCountChecker(
         absolutMinimalDiameter,
@@ -232,14 +206,13 @@ def finishedSearch(folderpath, drawcircles):
     )
 
     # scales Picture for output
-    width = 800
+    width = 600
     height = int((width / image.shape[1]) * image.shape[0])  # scaling height to width
     resized_image = cv.resize(image, (width, height))
 
     # shows picture
-    if drawcircles:
+    if show_Image:
         cv.imshow("Detected Defects", resized_image)
         cv.waitKey(0)
         cv.destroyAllWindows()
 
-        
