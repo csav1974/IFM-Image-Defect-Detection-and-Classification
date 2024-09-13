@@ -3,7 +3,6 @@ import numpy as np
 import tensorflow as tf
 import os
 import csv
-import dataCollection.filemanagement as filemanagement
 from defectHandling.chippingDefectHandling import create_ones_array_from_image as chipping_handling
 from defectHandling.whiskersDefectHandling import create_ones_array_from_image as whiskers_handling
 from enumDefectTypes import DefectType

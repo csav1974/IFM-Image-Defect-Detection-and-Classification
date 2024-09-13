@@ -63,7 +63,6 @@ def saveROIsToBMP(rois, defectType: DefectType, subfolder_name, base_folder="dat
 
     # Save each ROI as a BMP file
     for idx, roi in enumerate(rois):
-        filenamebeginning = str(subfolder_name)
         filename = os.path.join(final_path, f"{defectType.value}_{idx + 1}.bmp")
         cv.imwrite(filename, roi)
 
