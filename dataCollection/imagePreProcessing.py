@@ -28,7 +28,10 @@ def findCircles(minimalDiameter, maximalDiameter, image):
 def bmpToProbeOnly(filename):
     image=cv.imread(filename)
     blurredImage = TransformToBlurredGray(image)
-    circles = findCircles(3500,5000, blurredImage)
+    height, width, _ = image.shape
+    min_diameter= int(min([height, width]) * 0.9)
+    max_diameter = int(min([height, width]))
+    circles = findCircles(minimalDiameter=min_diameter,maximalDiameter=max_diameter, image=blurredImage)
     if circles is not None:
         circles = np.uint16(np.around(circles))
         center = (circles[0, 0][0], circles[0, 0][1])
@@ -49,6 +52,19 @@ def bmpToProbeOnly(filename):
         alpha_channel = mask  
         return cv.merge((b, g, r, alpha_channel))
 
+def bmpToSquare(filename):
+    image=cv.imread(filename)
+    height, width, _ = image.shape
+
+    square_size = width // 2
+
+    # Calculate the top-left corner of the square
+    start_x = (width - square_size) // 2 
+    start_y = (height - square_size) // 2 
+    # Crop the square around the center
+    image = image[start_y:start_y + square_size, start_x:start_x + square_size]
+
+    return image
 
 def saveBMPtoFolder(image, input_folder):
     """
@@ -81,6 +97,10 @@ def finishedProcessing(filename, folderpath):
     return progressed_filename
 
 
+def dataCollectionSquare(filename, folderpath):
+    progressed_filename = saveBMPtoFolder(image= bmpToSquare(filename), input_folder= folderpath)
+    return progressed_filename
+
 # # Bild auf gewünschte Größe skalieren
 # width = 1000  # gewünschte Breite
 # height = int((width / image.shape[1]) * image.shape[0])  # Höhe entsprechend skalieren
@@ -89,3 +109,5 @@ def finishedProcessing(filename, folderpath):
 # cv.imshow('Detected Defects', resized_image)
 # cv.waitKey(0)
 # cv.destroyAllWindows()
+
+

@@ -1,35 +1,32 @@
 import cv2 as cv
-import numpy as np
-import filemanagement
-from imagePreProcessing import finishedProcessing as imageProcessing
+import dataCollection.filemanagement as filemanagement
+from dataCollection.imagePreProcessing import finishedProcessing as imageProcessing
+from enumDefectTypes import DefectType
 
 def chippingDetection(filepath, folderpath, show_Image):
     
 
     image = cv.imread(filepath)
-    # Bild in Graustufen umwandeln
+    # convert to grayscale
     gray_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
-    # Schwellenwert setzen, um helle Bereiche zu isolieren
+    # setting max brightnsess threshold
     _, thresholded = cv.threshold(gray_image, 200, 255, cv.THRESH_BINARY)
 
-    # Konturen finden
     contours, _ = cv.findContours(thresholded, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
-    # Liste für erkannte Defekte
     defects = []
 
     rois = []
-    # Durch alle Konturen iterieren
     for contour in contours:
-        # Begrenzendes Rechteck um die Kontur finden
+        # rectangle arounf defect
         x, y, w, h = cv.boundingRect(contour)
 
-        # Größe des Rechtecks überprüfen
-        if 4 <= w <= 40 and 4 <= h <= 40:
-            # Defekt gefunden, zur Liste hinzufügen
+        # check for size
+        if 4 <= w <= 80 and 4 <= h <= 80:
+
             defects.append((x, y, w, h))
-            # Defekt auf dem Originalbild markieren
+            # marks defect on image
             if show_Image:
                 cv.rectangle(image, (x, y), (x + w+5, y + h+5), (0, 255, 0), 2)
             
@@ -40,11 +37,11 @@ def chippingDetection(filepath, folderpath, show_Image):
             ]
             rois.append(roi_save)
     if not show_Image:
-        filemanagement.saveROIsToBMP(rois= rois, defectType= filemanagement.DefectType.CHIPPING, subfolder_name= folderpath)
-    # Anzahl gefundener Defekte
-    print(f'Gefundene Defekte: {len(defects)}')
+        filemanagement.saveROIsToBMP(rois= rois, defectType= DefectType.CHIPPING, subfolder_name= folderpath)
+    
+    print(f'Number of found Chipping Defects: {len(defects)}')
 
-    # Bild mit markierten Defekten anzeigen
+    
     if show_Image:
         width = 600
         height = int((width / image.shape[1]) * image.shape[0])  # scaling height to width

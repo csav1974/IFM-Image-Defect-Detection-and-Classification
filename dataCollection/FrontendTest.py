@@ -3,8 +3,8 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
 from threading import Thread
-from WiskersDetection import finishedSearch
-from chippingDefectDetection import finishedSearchChipping
+from dataCollection.WiskersDetection import finishedSearchWhiskers
+from dataCollection.chippingDefectDetection import finishedSearchChipping
 
 
 # Main application window
@@ -73,7 +73,7 @@ class MainApp:
     def run_processing(self):
         """Runs the image processing and hides the loading indicator."""
         try:
-            finishedSearchChipping(
+            finishedSearchWhiskers(
                 self.selected_folder, show_Image=False
             )  # drawcircles=True shows found defects, drawcircles False saves all found defekts
 

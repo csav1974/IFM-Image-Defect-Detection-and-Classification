@@ -1,8 +1,8 @@
 import cv2 as cv
 import numpy as np
 import os
-from imagePreProcessing import finishedProcessing as imageProcessing
-import filemanagement
+from dataCollection.imagePreProcessing import finishedProcessing as imageProcessing
+import dataCollection.filemanagement as filemanagement
 
 
 # Load picture and transform to blurred gray
@@ -173,7 +173,7 @@ def errorCountChecker(
 
 
 
-def finishedSearch(folderpath, show_Image):
+def finishedSearchWhiskers(folderpath, show_Image):
     filenameAndPath = filemanagement.find_largest_file(folderpath)
     # filenameAndPath = os.path.join(folderpath, f'probeOnly.bmp')
     filenameAndPath = imageProcessing(filenameAndPath, folderpath)

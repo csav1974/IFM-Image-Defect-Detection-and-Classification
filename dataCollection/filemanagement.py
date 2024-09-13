@@ -6,6 +6,7 @@ import cv2 as cv
 class DefectType(Enum):
     WHISKERS = "Whiskers"
     CHIPPING = "Chipping"
+    NO_ERROR = "No_Error"
 
 def find_largest_file(directory):
     """
@@ -34,7 +35,7 @@ def find_largest_file(directory):
     return largest_file
 
 
-def saveROIsToBMP(rois, defectType: DefectType, subfolder_name, base_folder="detectedErrors"):
+def saveROIsToBMP(rois, defectType: DefectType, subfolder_name, base_folder="dataCollection/detectedErrors"):
     """
     Saves each ROI in rois as a BMP file in a specified subfolder within 'detectedErrors'.
 
@@ -62,6 +63,7 @@ def saveROIsToBMP(rois, defectType: DefectType, subfolder_name, base_folder="det
 
     # Save each ROI as a BMP file
     for idx, roi in enumerate(rois):
+        filenamebeginning = str(subfolder_name)
         filename = os.path.join(final_path, f"{defectType.value}_{idx + 1}.bmp")
         cv.imwrite(filename, roi)
 
