@@ -83,10 +83,10 @@ for y in range(0, height - patch_size, stride):
             defect_positions.append((x, y))
             if prediction[0][0] > whiskers_detection_threshold :
                 whiskers_count += 1
-                defect_positions_whiskers.append((x,y))
+                defect_positions_whiskers.append((x,y,patch_size))
             if prediction[0][1] > chipping_detection_threshold :
                 chipping_count += 1
-                defect_positions_chipping.append((x, y))
+                defect_positions_chipping.append((x, y,patch_size))
 
         current_patch_number += 1
         print(f"Patch: {current_patch_number} / {number_of_patches}")
@@ -167,7 +167,7 @@ def save_coordinates_to_csv(coordinates, defect_type : DefectType, csv_filename=
             start_y = 0
             square_size = 0
         writer.writerow([start_x, start_y, square_size, patch_size, filename])
-        writer.writerow(["x", "y"])  # Header 
+        writer.writerow(["x", "y", "patch_size"])  # Header 
         writer.writerows(coordinates)  # Koordinates
     
     print(f"CSV-Datei wurde erfolgreich unter {file_path} gespeichert.")

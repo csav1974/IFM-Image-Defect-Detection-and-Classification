@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-def create_ones_array_from_image(image, chipping_position_list, patch_size, threshold):
+def create_ones_array_from_image(image, chipping_position_list, threshold):
 
     # convert image to np-array
     image_np = np.array(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY))
@@ -12,7 +12,7 @@ def create_ones_array_from_image(image, chipping_position_list, patch_size, thre
     ###testing
     meanvalue_array = []
     ####
-    for (x, y) in chipping_position_list:
+    for (x, y, patch_size) in chipping_position_list:
         defect_area = image[y : y + patch_size, x : x + patch_size]
         ###
         meanvalue = np.array(defect_area).mean()
