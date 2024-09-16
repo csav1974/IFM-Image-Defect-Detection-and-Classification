@@ -7,7 +7,6 @@ from PIL import Image, ImageTk
 stop_processing = False
 
 
-
 def show_image(patch):
     global stop_processing, selected_label
 
@@ -29,8 +28,10 @@ def show_image(patch):
     patch_pil = Image.fromarray(patch_rgb)
 
     # Resize the image by 500% (5x)
-    new_size = (patch_pil.width * 10, patch_pil.height * 10)
-    patch_pil_resized = patch_pil.resize(new_size, Image.NEAREST)  # Using NEAREST to keep pixelation
+    new_size = (patch_pil.width * 5, patch_pil.height * 5)
+    patch_pil_resized = patch_pil.resize(
+        new_size, Image.NEAREST
+    )  # Using NEAREST to keep pixelation
 
     # Convert resized image to Tkinter format
     patch_tk = ImageTk.PhotoImage(patch_pil_resized)
@@ -43,10 +44,10 @@ def show_image(patch):
     # Buttons for selection
     button_true = tk.Button(root, text="True", command=lambda: close_window(True))
     button_true.pack(side=tk.LEFT)
-    
+
     button_false = tk.Button(root, text="False", command=lambda: close_window(False))
     button_false.pack(side=tk.RIGHT)
-    
+
     # Quit Button
     button_quit = tk.Button(root, text="Quit", command=quit_processing)
     button_quit.pack(side=tk.BOTTOM)
@@ -61,35 +62,34 @@ def show_image(patch):
     # Calculate the position to center the window
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
-    
+
     x = (screen_width // 2) - (window_width // 2)
     y = (screen_height // 2) - (window_height // 2)
 
     # Set the window position
-    root.geometry(f'{window_width}x{window_height}+{x}+{y}')
+    root.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
     root.mainloop()
-
 
 
 def nonErrorArea(filepath, folderpath):
     global stop_processing
 
     image = cv2.imread(filepath)
-    
-    patch_size = 32
-    stride = 32
+
+    patch_size = 200
+    stride = 200
 
     height, width, _ = image.shape
 
     # Define the size of the square
-    square_size = 900
+    square_size = 3000
 
     # Calculate the top-left corner of the square
-    start_x = (width - square_size) // 2 
-    start_y = (height - square_size) // 2 
+    start_x = (width - square_size) // 2
+    start_y = (height - square_size) // 2
     # Crop the square around the center
-    image = image[start_y:start_y + square_size, start_x:start_x + square_size]
+    image = image[start_y : start_y + square_size, start_x : start_x + square_size]
 
     height, width, _ = image.shape
 
@@ -97,29 +97,33 @@ def nonErrorArea(filepath, folderpath):
     # Divide the image into patches
     for y in range(0, height - patch_size, stride):
         for x in range(0, width - patch_size, stride):
+            if stop_processing:
+                print("Processing stopped by user.")
+                break
+
+            patch = image[y : y + patch_size, x : x + patch_size]
+
+            show_image(patch)
 
             if stop_processing:
                 print("Processing stopped by user.")
                 break
-            
-            patch = image[y:y + patch_size, x:x + patch_size]
-            
-            show_image(patch)
-        
-            if stop_processing:
-                print("Processing stopped by user.")
-                break
-            
+
             if selected_label:
                 rois.append(patch)
+                print("Patch accepted")
             else:
                 print("Patch rejected.")
-            
 
-    filemanagement.saveROIsToBMP(rois= rois, defectType= filemanagement.DefectType.NO_ERROR, subfolder_name= folderpath)
-
-
+    filemanagement.saveROIsToBMP(
+        rois=rois,
+        defectType=filemanagement.DefectType.NO_ERROR,
+        subfolder_name=folderpath,
+    )
 
 
 # run the function
-nonErrorArea("sampleOnlyBMP/20240527_A9-2m$3D.bmp", "detectedErrors/20240527_A9-2m$3D")
+nonErrorArea(
+    "sampleOnlyBMP/20240610_A6-2m_10x$3D_Square.bmp",
+    "detectedErrors/20240610_A6-2m_10x$3D_Square",
+)

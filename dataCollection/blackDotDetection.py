@@ -6,7 +6,7 @@ import os
 
 # Read the microscope image
 # Replace 'microscope_image.jpg' with your image file path
-image_path = 'sampleOnlyBMP/20240610_A6-2m_10x$3D.bmp'
+image_path = "sampleOnlyBMP/20240610_A6-2m_10x$3D.bmp"
 
 image = cv2.imread(image_path)
 
@@ -15,10 +15,10 @@ height, width, _ = image.shape
 square_size = 4000
 
 # Calculate the top-left corner of the square
-start_x = (width - square_size) // 3 
-start_y = (height - square_size) // 3 
+start_x = (width - square_size) // 3
+start_y = (height - square_size) // 3
 # Crop the square around the center
-image = image[start_y:start_y + square_size, start_x:start_x + square_size]
+image = image[start_y : start_y + square_size, start_x : start_x + square_size]
 
 # Convert the image to grayscale
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -43,19 +43,19 @@ for cnt in contours:
     # Ignore small or large contours that are unlikely to be defects
     if area < 200 or area > 10000:
         continue
-    
+
     x, y, w, h = cv2.boundingRect(cnt)
     if (gray[y : y + height, x : x + width] > 220).sum() >= 4:
         continue
     # Calculate the equivalent diameter
     equi_diameter = np.sqrt(4 * area / np.pi)
-    
+
     # Approximate the contour to a circle and compute circularity
     perimeter = cv2.arcLength(cnt, True)
     if perimeter == 0:
         continue
     circularity = 4 * np.pi * (area / (perimeter * perimeter))
-    
+
     # Consider contours that are roughly circular
     if circularity > 0.4:
         # Calculate centroid of the defect
@@ -64,9 +64,9 @@ for cnt in contours:
             continue
         cX = int(M["m10"] / M["m00"])
         cY = int(M["m01"] / M["m00"])
-        
+
         # Add the defect information to the list
-        defects.append((x, y, max([w,h])))
+        defects.append((x, y, max([w, h])))
 
 
 image_name = os.path.basename(image_path)  # Extract image name from path
@@ -88,20 +88,26 @@ csv_data.append(["x", "y", "patch_size"])
 csv_data.extend(defects)
 
 # Write to CSV file
-csv_path = 'defectPositionCSV/blackDotDefects.csv'
-with open(csv_path, mode='w', newline='') as file:
+csv_path = "defectPositionCSV/blackDotDefects.csv"
+with open(csv_path, mode="w", newline="") as file:
     writer = csv.writer(file)
     writer.writerows(csv_data)
 
 
 # Optionally, draw the detected defects on the image and display it
 for defect in defects:
-    cv2.rectangle(image, (defect[0], defect[1]), (defect[0] + defect[2], defect[1] + defect[2]), (0, 0, 0), 2)
+    cv2.rectangle(
+        image,
+        (defect[0], defect[1]),
+        (defect[0] + defect[2], defect[1] + defect[2]),
+        (0, 0, 0),
+        2,
+    )
 
 # Resize the image
 resized_image = cv2.resize(image, (800, 800))
 
 # Display the resized image with detected defects
-cv2.imshow('Detected Defects', resized_image)
+cv2.imshow("Detected Defects", resized_image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()

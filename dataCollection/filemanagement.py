@@ -8,7 +8,7 @@ import glob
 def find_largest_file(directory):
     """
     Finds the largest file in the specified directory.
- 
+
     Args:
         directory (str): The path to the directory to search.
 
@@ -32,7 +32,12 @@ def find_largest_file(directory):
     return largest_file
 
 
-def saveROIsToBMP(rois, defectType: DefectType, subfolder_name, base_folder="dataCollection/detectedErrors"):
+def saveROIsToBMP(
+    rois,
+    defectType: DefectType,
+    subfolder_name,
+    base_folder="dataCollection/detectedErrors",
+):
     """
     Saves each ROI in rois as a BMP file in a specified subfolder within 'detectedErrors'.
 
@@ -65,7 +70,8 @@ def saveROIsToBMP(rois, defectType: DefectType, subfolder_name, base_folder="dat
             filename = os.path.join(final_path, f"{defectType.value}_{idx + 10000}.bmp")
         cv.imwrite(filename, roi)
 
-    print(f'files where safed to {final_path}')
+    print(f"files where safed to {final_path}")
+
 
 def check_brightness(image_path):
     """
@@ -74,7 +80,7 @@ def check_brightness(image_path):
     """
     img = Image.open(image_path).convert("L")  # Convert to grayscale
     pixel_data = img.load()
-    
+
     width, height = img.size
     bright_pixel_count = 0
 
@@ -87,6 +93,7 @@ def check_brightness(image_path):
                 return True
 
     return False
+
 
 def delete_bright_images(folder_path):
     """
@@ -105,5 +112,6 @@ def delete_bright_images(folder_path):
                 print(f"Keeping {bmp_file} (not enough bright pixels)")
         except Exception as e:
             print(f"Error processing {bmp_file}: {e}")
+
 
 # delete_bright_images("dataCollection/detectedErrors/20240610_A6-2m_10x$3D/Whiskers (copy)")

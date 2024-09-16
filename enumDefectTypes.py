@@ -6,4 +6,3 @@ class DefectType(Enum):
     WHISKERS = "Whiskers"
     CHIPPING = "Chipping"
     NO_ERROR = "No_Error"
-

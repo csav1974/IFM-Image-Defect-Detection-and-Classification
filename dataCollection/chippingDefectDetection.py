@@ -3,9 +3,8 @@ import dataCollection.filemanagement as filemanagement
 from dataCollection.imagePreProcessing import finishedProcessing as imageProcessing
 from enumDefectTypes import DefectType
 
-def chippingDetection(filepath, folderpath, show_Image):
-    
 
+def chippingDetection(filepath, folderpath, show_Image):
     image = cv.imread(filepath)
     # convert to grayscale
     gray_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
@@ -24,33 +23,33 @@ def chippingDetection(filepath, folderpath, show_Image):
 
         # check for size
         if 20 <= w <= 300 and 20 <= h <= 300:
-
             defects.append((x, y, w, h))
             # marks defect on image
             if show_Image:
-                cv.rectangle(image, (x, y), (x + w+20, y + h+20), (0, 255, 0), 2)
-            
-            #saving ROI
+                cv.rectangle(image, (x, y), (x + w + 20, y + h + 20), (0, 255, 0), 2)
+
+            # saving ROI
             roi_save = image[
                 y - (h + 40) : y + (h + 40),
                 x - (w + 40) : x + (w + 40),
             ]
             rois.append(roi_save)
     if not show_Image:
-        filemanagement.saveROIsToBMP(rois= rois, defectType= DefectType.CHIPPING, subfolder_name= folderpath)
-    
-    print(f'Number of found Chipping Defects: {len(defects)}')
+        filemanagement.saveROIsToBMP(
+            rois=rois, defectType=DefectType.CHIPPING, subfolder_name=folderpath
+        )
 
-    
+    print(f"Number of found Chipping Defects: {len(defects)}")
+
     if show_Image:
         width = 600
-        height = int((width / image.shape[1]) * image.shape[0])  # scaling height to width
+        height = int(
+            (width / image.shape[1]) * image.shape[0]
+        )  # scaling height to width
         resized_image = cv.resize(image, (width, height))
-        cv.imshow('Defekte', resized_image)
+        cv.imshow("Defekte", resized_image)
         cv.waitKey(0)
         cv.destroyAllWindows()
-
-
 
 
 def finishedSearchChipping(folderpath, show_Image):
@@ -59,8 +58,11 @@ def finishedSearchChipping(folderpath, show_Image):
     chippingDetection(filenameAndPath, folderpath, show_Image)
 
 
-
 ####test
-chippingDetection(filepath="sampleOnlyBMP/20240610_A6-2m_10x$3D_Square.bmp", folderpath="dataCollection/detectedErrors/20240610_A6-2m_10x$3D_Square", show_Image=False)
+chippingDetection(
+    filepath="sampleOnlyBMP/20240610_A6-2m_10x$3D_Square.bmp",
+    folderpath="dataCollection/detectedErrors/20240610_A6-2m_10x$3D_Square",
+    show_Image=False,
+)
 
 ####

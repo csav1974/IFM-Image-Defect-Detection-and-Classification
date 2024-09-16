@@ -31,9 +31,7 @@ class MainApp:
         self.run_button.grid(row=2, column=0, padx=5, pady=5)
 
         # Quit button
-        self.quit_button = ttk.Button(
-            self.folder_frame, text="Quit", command=root.quit
-        )
+        self.quit_button = ttk.Button(self.folder_frame, text="Quit", command=root.quit)
         self.quit_button.grid(row=3, column=0, padx=5, pady=5)
 
         # Label and progress bar for loading indicator

@@ -6,8 +6,7 @@ import cv2
 # takes the folder with actual images and creates a rotated and mirrored version
 # do not use more then once per folder!
 def artificial_Sample_enhance(folder_path):
-
-        # Check if the folder exists
+    # Check if the folder exists
     if not os.path.isdir(folder_path):
         raise ValueError(f"The folder {folder_path} does not exist.")
 
@@ -16,7 +15,7 @@ def artificial_Sample_enhance(folder_path):
         file_path = os.path.join(folder_path, filename)
 
         # Check if the file is an image
-        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
+        if filename.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".tiff")):
             # Read the image
             image = cv2.imread(file_path)
 
@@ -35,4 +34,6 @@ def artificial_Sample_enhance(folder_path):
             cv2.imwrite(mirrored_image_path, mirrored_image)
 
 
-artificial_Sample_enhance("detectedErrors/20240527_A9-2m$3D/No_Error")
+artificial_Sample_enhance(
+    "dataCollection/detectedErrors/machinefoundErrors/20240610_A6-2m_10x$3D_Square/Chipping"
+)

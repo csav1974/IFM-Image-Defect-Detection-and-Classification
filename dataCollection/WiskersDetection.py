@@ -135,7 +135,7 @@ def checkAndDrawCircles(
             # Calculating Mean
             mean_intensity = np.mean(circle_roi)
             # std_intensity = np.std(circle_roi)
-            # check if Mean intensity and radius is under the threshold 
+            # check if Mean intensity and radius is under the threshold
             if (
                 mean_intensity < maximalMeanIntensity
                 and minimalDiameter <= 2 * radius <= maximalDiameter
@@ -148,7 +148,11 @@ def checkAndDrawCircles(
                     )  # draws Circle on IMage for representation
 
     if not drawcircles:
-        filemanagement.saveROIsToBMP(circle_rois, defectType= filemanagement.DefectType.WHISKERS, subfolder_name=filename)  # saves ROIs
+        filemanagement.saveROIsToBMP(
+            circle_rois,
+            defectType=filemanagement.DefectType.WHISKERS,
+            subfolder_name=filename,
+        )  # saves ROIs
     return errorCount
 
 
@@ -172,7 +176,6 @@ def errorCountChecker(
     )
 
 
-
 def finishedSearchWhiskers(folderpath, show_Image):
     """
     use this when working directly from IFM-Folder
@@ -180,20 +183,17 @@ def finishedSearchWhiskers(folderpath, show_Image):
     filenameAndPath = filemanagement.find_largest_file(folderpath)
     # filenameAndPath = os.path.join(folderpath, f'probeOnly.bmp')
     filenameAndPath = imageProcessing(filenameAndPath, folderpath)
-    
+
     image, blurred_image = loadPicture(filenameAndPath=filenameAndPath)
     """
     image, blurred_image = loadPicture(filenameAndPath=folderpath)
-
 
     # defining parameters
     absolutMinimalDiameter = 30
     absolutMaximalDiameter = 100
     absolutMaximalMeanIntensity = 180
 
-    circles = findCircles(
-        absolutMinimalDiameter, absolutMaximalDiameter, blurred_image
-    )
+    circles = findCircles(absolutMinimalDiameter, absolutMaximalDiameter, blurred_image)
     numberOfErrorsDetected = checkAndDrawCircles(
         workImage=blurred_image,
         circles=circles,
@@ -221,4 +221,3 @@ def finishedSearchWhiskers(folderpath, show_Image):
         cv.imshow("Detected Defects", resized_image)
         cv.waitKey(0)
         cv.destroyAllWindows()
-
