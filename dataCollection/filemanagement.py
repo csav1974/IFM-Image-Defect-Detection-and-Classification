@@ -1,12 +1,9 @@
 import os
-from enum import Enum
 import cv2 as cv
+from enumDefectTypes import DefectType
+from PIL import Image
+import glob
 
-# class for accepted Defect-Types
-class DefectType(Enum):
-    WHISKERS = "Whiskers"
-    CHIPPING = "Chipping"
-    NO_ERROR = "No_Error"
 
 def find_largest_file(directory):
     """
@@ -64,6 +61,49 @@ def saveROIsToBMP(rois, defectType: DefectType, subfolder_name, base_folder="dat
     # Save each ROI as a BMP file
     for idx, roi in enumerate(rois):
         filename = os.path.join(final_path, f"{defectType.value}_{idx + 1}.bmp")
+        if os.path.exists(filename):
+            filename = os.path.join(final_path, f"{defectType.value}_{idx + 10000}.bmp")
         cv.imwrite(filename, roi)
 
     print(f'files where safed to {final_path}')
+
+def check_brightness(image_path):
+    """
+    Check if an image has at least 5 pixels with brightness over 220.
+    Used to seperate "Blackdot-Defects" from Whiskers defects for training Data.
+    """
+    img = Image.open(image_path).convert("L")  # Convert to grayscale
+    pixel_data = img.load()
+    
+    width, height = img.size
+    bright_pixel_count = 0
+
+    # Loop through all pixels
+    for x in range(width):
+        for y in range(height):
+            if pixel_data[x, y] > 180:  # Brightness threshold
+                bright_pixel_count += 1
+            if bright_pixel_count >= 5:
+                return True
+
+    return False
+
+def delete_bright_images(folder_path):
+    """
+    Delete all .bmp images in a folder that have at least 5 bright pixels.
+    """
+    # Find all .bmp files in the folder
+    bmp_files = glob.glob(os.path.join(folder_path, "*.bmp"))
+
+    # Loop through all found .bmp files
+    for bmp_file in bmp_files:
+        try:
+            if check_brightness(bmp_file):
+                print(f"Deleting {bmp_file} (too many bright pixels)")
+                os.remove(bmp_file)
+            else:
+                print(f"Keeping {bmp_file} (not enough bright pixels)")
+        except Exception as e:
+            print(f"Error processing {bmp_file}: {e}")
+
+# delete_bright_images("dataCollection/detectedErrors/20240610_A6-2m_10x$3D/Whiskers (copy)")

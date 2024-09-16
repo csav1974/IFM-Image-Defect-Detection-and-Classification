@@ -129,8 +129,8 @@ def checkAndDrawCircles(
                 center[0] - radius : center[0] + radius,
             ]
             circle_roi_save = imageCopy[
-                center[1] - (radius + 3) : center[1] + (radius + 3),
-                center[0] - (radius + 3) : center[0] + (radius + 3),
+                center[1] - (radius + 20) : center[1] + (radius + 20),
+                center[0] - (radius + 20) : center[0] + (radius + 20),
             ]
             # Calculating Mean
             mean_intensity = np.mean(circle_roi)
@@ -174,18 +174,24 @@ def errorCountChecker(
 
 
 def finishedSearchWhiskers(folderpath, show_Image):
+    """
+    use this when working directly from IFM-Folder
+
     filenameAndPath = filemanagement.find_largest_file(folderpath)
     # filenameAndPath = os.path.join(folderpath, f'probeOnly.bmp')
     filenameAndPath = imageProcessing(filenameAndPath, folderpath)
-
+    
     image, blurred_image = loadPicture(filenameAndPath=filenameAndPath)
+    """
+    image, blurred_image = loadPicture(filenameAndPath=folderpath)
+
 
     # defining parameters
-    absolutMinimalDiameter = 6
-    absolutMaximalDiameter = 60
-    absolutMaximalMeanIntensity = 150
+    absolutMinimalDiameter = 30
+    absolutMaximalDiameter = 100
+    absolutMaximalMeanIntensity = 180
 
-    circles = parameterRange(
+    circles = findCircles(
         absolutMinimalDiameter, absolutMaximalDiameter, blurred_image
     )
     numberOfErrorsDetected = checkAndDrawCircles(
