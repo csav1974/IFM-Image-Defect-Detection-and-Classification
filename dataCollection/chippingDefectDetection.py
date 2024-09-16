@@ -23,17 +23,17 @@ def chippingDetection(filepath, folderpath, show_Image):
         x, y, w, h = cv.boundingRect(contour)
 
         # check for size
-        if 4 <= w <= 80 and 4 <= h <= 80:
+        if 20 <= w <= 300 and 20 <= h <= 300:
 
             defects.append((x, y, w, h))
             # marks defect on image
             if show_Image:
-                cv.rectangle(image, (x, y), (x + w+5, y + h+5), (0, 255, 0), 2)
+                cv.rectangle(image, (x, y), (x + w+20, y + h+20), (0, 255, 0), 2)
             
             #saving ROI
             roi_save = image[
-                y - (h + 3) : y + (h + 3),
-                x - (w + 3) : x + (w + 3),
+                y - (h + 40) : y + (h + 40),
+                x - (w + 40) : x + (w + 40),
             ]
             rois.append(roi_save)
     if not show_Image:
@@ -57,3 +57,10 @@ def finishedSearchChipping(folderpath, show_Image):
     filenameAndPath = filemanagement.find_largest_file(folderpath)
     filenameAndPath = imageProcessing(filenameAndPath, folderpath)
     chippingDetection(filenameAndPath, folderpath, show_Image)
+
+
+
+####test
+chippingDetection(filepath="sampleOnlyBMP/20240610_A6-2m_10x$3D_Square.bmp", folderpath="dataCollection/detectedErrors/20240610_A6-2m_10x$3D_Square", show_Image=False)
+
+####
