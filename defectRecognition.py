@@ -15,11 +15,32 @@ model = tf.keras.models.load_model(f"{path_to_model}.keras")
 IMG_SIZE = 32  # scales the patch size down (or up) to 32*32 Pixel
 
 # Load the microscope image
-filename = 'sampleOnlyBMP/20240610_A6-2m_10x$3D.bmp'
+filename = 'sampleOnlyBMP/20240610_A6-2m_10x$3D_Square.bmp'
 image = cv2.imread(filename)
 work_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
+# Parameters for running the Programm
 
+show_image = True
+
+safe_image = True
+
+safe_coordinates = True
+
+# set the confident threshold of model prediction
+chipping_detection_threshold = 0.50
+whiskers_detection_threshold = 0.95
+
+
+# Define patch size
+patch_size = 160
+
+# Define stride (optional)
+stride = patch_size // 2  # 50% overlap if stride = patch_size // 2
+
+start_x = 0
+start_y = 0
+square_size = 0
 
 # this part is used if only a part of the image should be examed for faster runtime. 
 # Comment out if you want to exam the whole picture  
@@ -41,14 +62,6 @@ work_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 height, width = work_image.shape
 
-# Define patch size
-patch_size = 64
-
-# Define stride (optional)
-stride = patch_size // 2  # 50% overlap if stride = patch_size // 2
-
-
-
 number_of_patches = len(range(0, height - patch_size, stride))* len(range(0, width - patch_size, stride))
 current_patch_number = 0
 
@@ -56,12 +69,10 @@ current_patch_number = 0
 defect_positions = []
 defect_positions_chipping = []
 defect_positions_whiskers = []
+non_defect_position = []
 chipping_count = 0
 whiskers_count = 0
 
-# set the confident threshold of model prediction
-chipping_detection_threshold = 0.30
-whiskers_detection_threshold = 0.90
 
 # Divide the image into patches
 for y in range(0, height - patch_size, stride):
@@ -80,16 +91,18 @@ for y in range(0, height - patch_size, stride):
         prediction = model.predict(patch_resized)
         
         if prediction[0][0] > whiskers_detection_threshold or prediction[0][1] > chipping_detection_threshold :  # Assuming threshold for defect = 0.3
-            defect_positions.append((x, y))
+            defect_positions.append((x, y, patch_size))
             if prediction[0][0] > whiskers_detection_threshold :
                 whiskers_count += 1
-                defect_positions_whiskers.append((x,y,patch_size))
+                defect_positions_whiskers.append((x, y, patch_size))
             if prediction[0][1] > chipping_detection_threshold :
                 chipping_count += 1
-                defect_positions_chipping.append((x, y,patch_size))
-
+                defect_positions_chipping.append((x, y, patch_size))
+        if prediction[0][2] > 0.95 :
+            non_defect_position.append((x, y, patch_size))
         current_patch_number += 1
         print(f"Patch: {current_patch_number} / {number_of_patches}")
+        print(prediction)
         # print(f"Preddiction= {prediction}")
         # print(f"Chipping prediction: {prediction[0]} \nWhiskers prediction: {prediction[1]}")
 
@@ -146,29 +159,34 @@ def calculate_defect_area():
     print(f"\nNumer of defect Pixels: {num_zeros}")
     print(f"Number of working Pixels: {num_ones}")
     print(f"Ratio of defect to working: {ratio:.2f}%")
-    save_coordinates_to_csv(defect_positions_chipping, DefectType.CHIPPING)
-    save_coordinates_to_csv(defect_positions_whiskers, DefectType.WHISKERS)
 
 
 
-def save_coordinates_to_csv(coordinates, defect_type : DefectType, csv_filename="coordinates.csv",):
+
+
+
+def safe_coordinates_to_CSV(coordinates, defect_type : DefectType,
+                            start_x=0, start_y=0, square_size=0, patch_size=0, filename="unknown"):
+    csv_filename = os.path.splitext(os.path.split(filename)[-1])[0]
     folder_name = "defectPositionCSV"
+    folder_path = os.path.join(folder_name, defect_type.value)
+    file_path = os.path.join(folder_path, f"{csv_filename}.csv")
     
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
+    # Erstellen des Ordners, falls er nicht existiert
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
     
-    file_path = os.path.join(folder_name, defect_type.value, csv_filename)
-    
+    # Schreiben der Koordinaten in die CSV-Datei
     with open(file_path, mode='w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["start_x", "start_y","image_size", "patch_size", "image_name"])
-        if 'start_x' not in globals:
-            start_x = 0
-            start_y = 0
-            square_size = 0
-        writer.writerow([start_x, start_y, square_size, patch_size, filename])
-        writer.writerow(["x", "y", "patch_size"])  # Header 
-        writer.writerows(coordinates)  # Koordinates
+        # Kopfzeile für zusätzliche Informationen
+        writer.writerow(["start_x", "start_y", "image_size", "patch_size", "Defect Type", "image_name"])
+        writer.writerow([start_x, start_y, square_size, patch_size, defect_type.value, filename])
+        
+        # Kopfzeile für die Koordinaten
+        writer.writerow(["x", "y", "patch_size"])
+        # Koordinaten in die Datei schreiben
+        writer.writerows(coordinates)
     
     print(f"CSV-Datei wurde erfolgreich unter {file_path} gespeichert.")
 
@@ -178,11 +196,18 @@ def save_coordinates_to_csv(coordinates, defect_type : DefectType, csv_filename=
 # shows all areas that were marked as defects as squares on RGB Probe-Image
 def visual_representation(image, defect_positions_chipping, defect_positions_whiskers):
 
-    for (x, y) in defect_positions_whiskers:
-        cv2.rectangle(image, (x, y), (x + patch_size, y + patch_size), (0, 0, 0), 1)
-    for (x, y) in defect_positions_chipping:
-        cv2.rectangle(image, (x, y), (x + patch_size, y + patch_size), (0, 0, 255), 1)
-    cv2.imshow('Detected Defects', image_to_show)
+    for (x, y, patch_size) in defect_positions_whiskers:
+        cv2.rectangle(image, (x, y), (x + patch_size, y + patch_size), (0, 0, 0), 2)
+    for (x, y, patch_size) in defect_positions_chipping:
+        cv2.rectangle(image, (x, y), (x + patch_size, y + patch_size), (0, 0, 255), 2)
+
+
+    # scales Picture for output
+    width_resized = 600
+    height_resized = int((width_resized / image.shape[1]) * image.shape[0])  # scaling height to width
+    resized_image = cv2.resize(image, (width_resized, height_resized))
+    
+    cv2.imshow('Detected Defects', resized_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -196,4 +221,18 @@ print(f"Chipping Defects: {chipping_count}\n"
       f"Whiskers Defects: {whiskers_count}")
 
 image_to_show = image
-visual_representation(image_to_show, defect_positions_chipping=defect_positions_chipping, defect_positions_whiskers=defect_positions_whiskers)
+if (show_image):
+    visual_representation(image_to_show, defect_positions_chipping=defect_positions_chipping, defect_positions_whiskers=defect_positions_whiskers)
+
+if (safe_coordinates):
+    safe_coordinates_to_CSV(defect_positions_chipping, defect_type=DefectType.CHIPPING, 
+                            start_x=start_x, start_y=start_y, square_size=square_size, patch_size=patch_size, filename=filename)
+    safe_coordinates_to_CSV(defect_positions_whiskers, defect_type=DefectType.WHISKERS, 
+                            start_x=start_x, start_y=start_y, square_size=square_size, patch_size=patch_size, filename=filename)
+    safe_coordinates_to_CSV(non_defect_position, defect_type=DefectType.NO_ERROR, 
+                            start_x=start_x, start_y=start_y, square_size=square_size, patch_size=patch_size, filename=filename)
+if (safe_image):
+    name_for_safed_image = os.path.split(filename)[-1]
+    folder_for_example_Images = "exampleImage"
+    final_name = os.path.join(folder_for_example_Images, name_for_safed_image)
+    cv2.imwrite(final_name, image_to_show)
