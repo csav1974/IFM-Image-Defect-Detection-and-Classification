@@ -1,0 +1,4 @@
+-i https://pypi.org/simple
+numpy==2.1.1; python_version >= '3.10'
+opencv-python==4.10.0.84; python_version >= '3.6'
+tk==0.1.0

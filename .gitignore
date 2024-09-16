@@ -164,6 +164,8 @@ cython_debug/
 # DataFolders
 dataCollection/detectedErrors/
 dataCollection/trainingdata/
+dataCollection/trainingData_v2/
+dataCollection/trainingdatasafe/
 defectPositionCSV/
 sampleOnlyBMP/
 exampleImage/
