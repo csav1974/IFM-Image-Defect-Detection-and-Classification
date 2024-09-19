@@ -11,6 +11,7 @@ def calculate_noise(image):
 
     return mean
 
+
 def images_to_mean_noise(folderpath):
     mean_array = []
     image_paths = find_bmp_files(folderpath)
@@ -24,7 +25,7 @@ def images_to_mean_noise(folderpath):
 
 def find_bmp_files(directory):
     bmp_files = []
-    
+
     # Iterate over all files in the specified directory
     for file in os.listdir(directory):
         # Check if the file has a .csv extension
@@ -35,5 +36,5 @@ def find_bmp_files(directory):
             bmp_files.append(full_path)
             if len(bmp_files) > 500:
                 return bmp_files
-            
+
     return bmp_files
