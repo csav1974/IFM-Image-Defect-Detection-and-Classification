@@ -6,7 +6,7 @@ import cv2
 def calculate_defect_map_whiskers(coordinates, image, threshold=0.05):
     background_value = (
         mean_noise(
-            "dataCollection/detectedErrors/machinefoundErrors/20240610_A6-2m_10x$3D/No_Error"
+            "dataCollection/detectedErrors/machinefoundErrors/20240610_A6-2m_10x$3D/No_Error", 1000
         )
         / 255
     )

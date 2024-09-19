@@ -19,19 +19,21 @@ def calculate_defect_map_chipping(coordinates, image, threshold=0.9):
         # Apply the mask directly to the defect_map
         defect_map[x : x + patch_size, y : y + patch_size][mask] = 0
 
-    # include_unfound_chipping(defect_map, image)
 
     # Output the number of defect pixels
     print(f"Defect Pixels from Chipping List: {np.sum(defect_map == 0)}")
 
+    include_unfound_chipping(defect_map, image_gray)
+
+    
+
     return defect_map
 
 
-def include_unfound_chipping(defect_map, image, threshold=0.99):
-    # Calculate the sum of absolute deviations of the BGR values from the background values
-    brightness = np.sum(np.abs(image), axis=-1) / 255
-    # Create a mask where the deviation exceeds the threshold
-    mask = (brightness > threshold) & (np.sum(image, axis=-1) > 0)
+def include_unfound_chipping(defect_map, image_gray, threshold=0.90):
+    brightness = image_gray
+    # Create a mask where the brightness exceeds the threshold
+    mask = (brightness > threshold) & (image_gray > 0)
     mask = np.transpose(mask)
     # Set corresponding pixels in defect_map to 0 where the mask is True
     defect_map[mask] = 0

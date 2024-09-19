@@ -38,6 +38,10 @@ def calculate_defect_area(image_path, csv_folder):
 
     print_results(num_zeros, num_ones, ratio)
 
+    if safe_image:
+        safe_image_with_defects(combined_map, image)
+
+
     return ratio
 
 

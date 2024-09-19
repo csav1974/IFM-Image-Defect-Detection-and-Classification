@@ -12,9 +12,9 @@ def calculate_noise(image):
     return mean
 
 
-def images_to_mean_noise(folderpath):
+def images_to_mean_noise(folderpath, number_of_patches):
     mean_array = []
-    image_paths = find_bmp_files(folderpath)
+    image_paths = find_bmp_files(folderpath, number_of_patches)
     for path in image_paths:
         image = cv2.imread(path)
         mean = calculate_noise(image=image)
@@ -23,7 +23,7 @@ def images_to_mean_noise(folderpath):
     return np.mean(mean_array)
 
 
-def find_bmp_files(directory):
+def find_bmp_files(directory, number_of_patches):
     bmp_files = []
 
     # Iterate over all files in the specified directory
@@ -34,7 +34,7 @@ def find_bmp_files(directory):
             full_path = os.path.join(directory, file)
             # Add the path to the list
             bmp_files.append(full_path)
-            if len(bmp_files) > 500:
+            if len(bmp_files) > number_of_patches:
                 return bmp_files
 
     return bmp_files
