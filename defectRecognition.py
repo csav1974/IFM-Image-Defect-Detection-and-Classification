@@ -3,12 +3,6 @@ import numpy as np
 import tensorflow as tf
 import os
 import csv
-from defectHandling.chippingDefectHandling import (
-    create_ones_array_from_image as chipping_handling,
-)
-from defectHandling.whiskersDefectHandling import (
-    create_ones_array_from_image as whiskers_handling,
-)
 from enumDefectTypes import DefectType
 
 
@@ -19,7 +13,7 @@ model = tf.keras.models.load_model(f"{path_to_model}.keras")
 IMG_SIZE = 32  # scales the patch size down (or up) to 32*32 Pixel
 
 # Load the microscope image
-filename = "sampleOnlyBMP/20240610_A6-2m_10x$3D_Square.bmp"
+filename = "sampleOnlyBMP/20240610_A6-2m_10x$3D.bmp"
 image = cv2.imread(filename)
 work_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -32,7 +26,7 @@ safe_image = True
 safe_coordinates = True
 
 # set the confident threshold of model prediction
-chipping_detection_threshold = 0.50
+chipping_detection_threshold = 0.90
 whiskers_detection_threshold = 0.95
 
 
@@ -92,7 +86,7 @@ for y in range(0, height - patch_size, stride):
         )  # Normalize and add batch dimension
 
         # ignore black area around probe
-        if np.mean(patch) < 1:
+        if np.any(patch_resized == 0):
             current_patch_number += 1
             continue
         # Classify the patch
@@ -109,76 +103,13 @@ for y in range(0, height - patch_size, stride):
             if prediction[0][1] > chipping_detection_threshold:
                 chipping_count += 1
                 defect_positions_chipping.append((x, y, patch_size))
-        if prediction[0][2] > 0.95:
+        if prediction[0][2] > 0.999:
             non_defect_position.append((x, y, patch_size))
         current_patch_number += 1
         print(f"Patch: {current_patch_number} / {number_of_patches}")
         print(prediction)
         # print(f"Preddiction= {prediction}")
         # print(f"Chipping prediction: {prediction[0]} \nWhiskers prediction: {prediction[1]}")
-
-
-# this part is for data collection
-# only used for training the model further
-########
-
-# image_for_rois = image
-# roisave_chipping = []
-# roisave_whiskers = []
-# for (x, y) in defect_positions_chipping:
-
-#     roisave_chipping.append(image_for_rois[y : y + patch_size, x : x + patch_size])
-
-# for (x, y) in defect_positions_whiskers:
-
-#     roisave_whiskers.append(image_for_rois[y : y + patch_size, x : x + patch_size])
-
-
-# def saferois_chipping(rois_save):
-#     filemanagement.saveROIsToBMP(rois=rois_save, defectType=filemanagement.DefectType.CHIPPING, subfolder_name="trainingdata/machinefoundErrors")
-
-
-# def saferois_whiskers(rois_save):
-#     filemanagement.saveROIsToBMP(rois=rois_save, defectType=filemanagement.DefectType.WHISKERS, subfolder_name="trainingdata/machinefoundErrors")
-
-# saferois_chipping(rois_save=roisave_chipping)
-# saferois_whiskers(rois_save=roisave_whiskers)
-
-############
-
-
-def calculate_defect_area():
-    defect_array_chipping = chipping_handling(
-        image=image,
-        chipping_position_list=defect_positions_chipping,
-        patch_size=patch_size,
-        threshold=150,
-    )
-    defect_array_whiskers = whiskers_handling(
-        image=image,
-        whiskers_position_list=defect_positions_whiskers,
-        patch_size=patch_size,
-        threshold=200,
-    )
-
-    # arrays = [defect_array_chipping, defect_array_whiskers]
-    arrays = [defect_array_chipping]
-    stacked_arrays = np.stack(arrays, axis=0)
-    combined_array = np.all(stacked_arrays, axis=0).astype(int)
-
-    num_zeros = np.sum(combined_array == 0)
-    num_ones = np.sum(combined_array == 1)
-
-    # calculate defect area
-    if num_ones == 0:
-        ratio = float("inf")
-    else:
-        ratio = (num_zeros / num_ones) * 100
-
-    # print results
-    print(f"\nNumer of defect Pixels: {num_zeros}")
-    print(f"Number of working Pixels: {num_ones}")
-    print(f"Ratio of defect to working: {ratio:.2f}%")
 
 
 def safe_coordinates_to_CSV(
@@ -243,8 +174,6 @@ def visual_representation(image, defect_positions_chipping, defect_positions_whi
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-
-# calculate_defect_area()
 
 # Display the result
 print(f"\nNumber of Defects found: {len(defect_positions)}")

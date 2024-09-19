@@ -1,46 +1,7 @@
 import cv2
 import os
-import csv
 from enumDefectTypes import DefectType
-
-
-def read_from_csv(csv_path):
-    coordinates = []
-
-    with open(csv_path, mode="r", newline="") as file:
-        reader = csv.reader(file)
-        next(
-            reader
-        )  # skip first header line (start_x,start_y,image_size,patch_size,image_name)
-        first_row = next(reader)
-        start_x, start_y, image_size, patch_size, defect_type, filename = first_row
-        start_x, start_y, image_size, patch_size = (
-            int(start_x),
-            int(start_y),
-            int(image_size),
-            int(patch_size),
-        )
-        if defect_type == DefectType.CHIPPING.value:
-            defect_type = DefectType.CHIPPING
-        if defect_type == DefectType.WHISKERS.value:
-            defect_type = DefectType.WHISKERS
-        image_name = os.path.splitext(filename)[0]
-        next(reader)  # to skip values
-        next(reader)  # to skip second header (x,y)
-        for row in reader:
-            coordinates.append(
-                (int(row[0]), int(row[1]), int(row[2]))
-            )  # reads x, y, patchsize
-
-    return (
-        start_x,
-        start_y,
-        image_size,
-        patch_size,
-        defect_type,
-        image_name,
-        coordinates,
-    )
+from readFromCSV import read_from_csv
 
 
 def safeDefectsFromCSV(image_path, csv_path):
@@ -48,9 +9,6 @@ def safeDefectsFromCSV(image_path, csv_path):
     start_x, start_y, image_size, patch_size, defect_type, image_name, coordinates = (
         read_from_csv(csv_path)
     )
-    image_name = os.path.splitext(os.path.split(image_name)[-1])[
-        0
-    ]  # Extract the last folder name
     if image_size == 0:
         image_resized = image
     else:
@@ -79,8 +37,8 @@ def safeDefectsFromCSV(image_path, csv_path):
         print(f"files safed to {filename}")
 
 
-image_path = "sampleOnlyBMP/20240610_A6-2m_10x$3D_Square.bmp"
-csv_path = "defectPositionCSV/Chipping/20240610_A6-2m_10x$3D_Square.csv"
+image_path = "sampleOnlyBMP/20240610_A6-2m_10x$3D.bmp"
+csv_path = "defectPositionCSV/blackDotDefects.csv"
 
 
 safeDefectsFromCSV(image_path, csv_path)

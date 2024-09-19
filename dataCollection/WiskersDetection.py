@@ -3,6 +3,7 @@ import numpy as np
 import os
 from dataCollection.imagePreProcessing import finishedProcessing as imageProcessing
 import dataCollection.filemanagement as filemanagement
+from enumDefectTypes import DefectType
 
 
 # Load picture and transform to blurred gray
@@ -150,7 +151,7 @@ def checkAndDrawCircles(
     if not drawcircles:
         filemanagement.saveROIsToBMP(
             circle_rois,
-            defectType=filemanagement.DefectType.WHISKERS,
+            defectType=DefectType.WHISKERS,
             subfolder_name=filename,
         )  # saves ROIs
     return errorCount
