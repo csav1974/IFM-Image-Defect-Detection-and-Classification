@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import os
+import csv
 from readFromCSV import read_from_csv
 from enumDefectTypes import DefectType
 from defectHandling.chippingDefectHandling import calculate_defect_map_chipping
@@ -15,9 +16,15 @@ def calculate_defect_area(image_path, csv_folder):
     image = cv2.imread(image_path)
     defect_maps = []
     for file_path in csv_path_list:
+        defect_type = read_from_csv(file_path)[4]
+
         defect_map, num_non_probe_area = csv_to_defect_map(
             image=image, csv_path=file_path
         )
+        if defect_type == DefectType.CHIPPING :
+            chipping_area = np.sum(defect_map == 0)
+        if defect_type == DefectType.WHISKERS :
+            whiskers_area = np.sum(defect_map == 0)
         defect_maps.append(defect_map)
 
     # defect_maps.append(calculate_unknown_defect_area(image)) #test
@@ -42,6 +49,35 @@ def calculate_defect_area(image_path, csv_folder):
         safe_image_with_defects(combined_map, image)
 
 
+    def save_results_to_CSV():
+        csv_filename = os.path.splitext(os.path.split(image_path)[-1])[0]
+
+        folder_path = "defectAreaCSV"
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
+        file_path = os.path.join(folder_path, f"{csv_filename}.csv")
+
+        with open(file_path, mode="w", newline="") as file:
+            writer = csv.writer(file)
+            # Header
+            writer.writerow(
+                [
+                    "Image_Name",
+                    "Chipping_Area_Total",
+                    "Chipping_Area_Relativ",
+                    "Whiskers_Area_Total",
+                    "Whiskers_Area_Relativ",
+                    "Defect_Area_Total",
+                    "Defect_Area_Relativ"
+                ]
+            )
+            writer.writerow(
+                [os.path.splitext(os.path.split(image_path)[-1])[0], chipping_area, (chipping_area / num_ones) * 100, whiskers_area, (whiskers_area / num_ones) * 100, num_zeros, ratio]
+            )
+
+
+        print(f"CSV-Datei wurde erfolgreich unter {file_path} gespeichert.")
     return ratio
 
 
@@ -83,7 +119,7 @@ def csv_to_defect_map(image, csv_path):
     if defect_type == DefectType.CHIPPING:
         defect_map = calculate_defect_map_chipping(
             coordinates, image_resized, threshold=0.9
-        )
+        )       
     if defect_type == DefectType.WHISKERS:
         defect_map = calculate_defect_map_whiskers(
             coordinates, image_resized, threshold=0.1
@@ -113,4 +149,5 @@ def print_results(num_zeros, num_ones, ratio):
     print(f"Ratio of defect to working: {ratio:.2f}%")
 
 
-calculate_defect_area("sampleOnlyBMP/20240610_A6-2m_10x$3D.bmp", "testing")
+
+calculate_defect_area("sampleOnlyBMP/20240424_A2-2m$3D_10x.bmp", "testing/20240424_A2-2m$3D_10x")
