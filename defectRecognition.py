@@ -8,23 +8,38 @@ from enumDefectTypes import DefectType
 
 # shows all areas that were marked as defects as squares on RGB Probe-Image
 def visual_representation(image, defect_positions_chipping, defect_positions_whiskers):
-    for x, y, patch_size in defect_positions_whiskers:
-        cv2.rectangle(image, (x, y), (x + patch_size, y + patch_size), (0, 0, 0), 2)
-    for x, y, patch_size in defect_positions_chipping:
-        cv2.rectangle(image, (x, y), (x + patch_size, y + patch_size), (0, 0, 255), 2)
+    # Print positions to debug
+    # print(f"Chipping Defects: {defect_positions_chipping}")
+    # print(f"Whiskers Defects: {defect_positions_whiskers}")
 
-    # scales Picture for output
+    # Get image dimensions
+    height, width = image.shape[:2]
+
+    # Draw rectangles for whiskers defects
+    for x, y, patch_size in defect_positions_whiskers:
+        if 0 <= x < width and 0 <= y < height:
+            cv2.rectangle(image, (x, y), (x + patch_size, y + patch_size), (0, 0, 0), 2)
+        else:
+            print(f"Skipping out-of-bounds defect at: {x}, {y}")
+
+    # Draw rectangles for chipping defects
+    for x, y, patch_size in defect_positions_chipping:
+        if 0 <= x < width and 0 <= y < height:
+            cv2.rectangle(image, (x, y), (x + patch_size, y + patch_size), (0, 0, 255), 2)
+        else:
+            print(f"Skipping out-of-bounds defect at: {x}, {y}")
+
+    # Scale Picture for output
     width_resized = 600
-    height_resized = int(
-        (width_resized / image.shape[1]) * image.shape[0]
-    )  # scaling height to width
+    height_resized = int((width_resized / image.shape[1]) * image.shape[0])  # scaling height to width
     resized_image = cv2.resize(image, (width_resized, height_resized))
 
+    # Show image with rectangles
     cv2.imshow("Detected Defects", resized_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-
+# safes found defects and non-defect areas to CSV File
 def safe_coordinates_to_CSV(
     coordinates,
     defect_type: DefectType,
@@ -70,13 +85,13 @@ def safe_coordinates_to_CSV(
 
 
 # Load Model. Assuming model is already trained
-model_name = "firstModelTest"
+model_name = "20240424_A2-2m$3D_10x_keras"
 path_to_model = os.path.join("kerasModels", model_name)
 model = tf.keras.models.load_model(f"{path_to_model}.keras")
 IMG_SIZE = 32  # scales the patch size down (or up) to 32*32 Pixel
 
 # Load the microscope image
-filename = "sampleOnlyBMP/20240610_A6-2m_10x$3D.bmp"
+filename = "sampleOnlyBMP/20240424_A2-2m$3D_10x.bmp"
 image = cv2.imread(filename)
 work_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -90,11 +105,11 @@ safe_coordinates = True
 
 # set the confident threshold of model prediction
 chipping_detection_threshold = 0.90
-whiskers_detection_threshold = 0.95
+whiskers_detection_threshold = 0.90
 
 
 # Define patch size
-patch_size = 160
+patch_size = 140
 
 # Define stride (optional)
 stride = patch_size // 2  # 50% overlap if stride = patch_size // 2
