@@ -6,6 +6,69 @@ import csv
 from enumDefectTypes import DefectType
 
 
+# shows all areas that were marked as defects as squares on RGB Probe-Image
+def visual_representation(image, defect_positions_chipping, defect_positions_whiskers):
+    for x, y, patch_size in defect_positions_whiskers:
+        cv2.rectangle(image, (x, y), (x + patch_size, y + patch_size), (0, 0, 0), 2)
+    for x, y, patch_size in defect_positions_chipping:
+        cv2.rectangle(image, (x, y), (x + patch_size, y + patch_size), (0, 0, 255), 2)
+
+    # scales Picture for output
+    width_resized = 600
+    height_resized = int(
+        (width_resized / image.shape[1]) * image.shape[0]
+    )  # scaling height to width
+    resized_image = cv2.resize(image, (width_resized, height_resized))
+
+    cv2.imshow("Detected Defects", resized_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+def safe_coordinates_to_CSV(
+    coordinates,
+    defect_type: DefectType,
+    start_x=0,
+    start_y=0,
+    square_size=0,
+    patch_size=0,
+    filename="unknown",
+):
+    csv_filename = os.path.splitext(os.path.split(filename)[-1])[0]
+    folder_name = "defectPositionCSV"
+    folder_path = os.path.join(folder_name, defect_type.value)
+    file_path = os.path.join(folder_path, f"{csv_filename}.csv")
+
+    # Erstellen des Ordners, falls er nicht existiert
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+    # Schreiben der Koordinaten in die CSV-Datei
+    with open(file_path, mode="w", newline="") as file:
+        writer = csv.writer(file)
+        # Kopfzeile für zusätzliche Informationen
+        writer.writerow(
+            [
+                "start_x",
+                "start_y",
+                "image_size",
+                "patch_size",
+                "Defect Type",
+                "image_name",
+            ]
+        )
+        writer.writerow(
+            [start_x, start_y, square_size, patch_size, defect_type.value, filename]
+        )
+
+        # Kopfzeile für die Koordinaten
+        writer.writerow(["x", "y", "patch_size"])
+        # Koordinaten in die Datei schreiben
+        writer.writerows(coordinates)
+
+    print(f"CSV-Datei wurde erfolgreich unter {file_path} gespeichert.")
+
+
 # Load Model. Assuming model is already trained
 model_name = "firstModelTest"
 path_to_model = os.path.join("kerasModels", model_name)
@@ -112,68 +175,6 @@ for y in range(0, height - patch_size, stride):
         # print(f"Chipping prediction: {prediction[0]} \nWhiskers prediction: {prediction[1]}")
 
 
-def safe_coordinates_to_CSV(
-    coordinates,
-    defect_type: DefectType,
-    start_x=0,
-    start_y=0,
-    square_size=0,
-    patch_size=0,
-    filename="unknown",
-):
-    csv_filename = os.path.splitext(os.path.split(filename)[-1])[0]
-    folder_name = "defectPositionCSV"
-    folder_path = os.path.join(folder_name, defect_type.value)
-    file_path = os.path.join(folder_path, f"{csv_filename}.csv")
-
-    # Erstellen des Ordners, falls er nicht existiert
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
-
-    # Schreiben der Koordinaten in die CSV-Datei
-    with open(file_path, mode="w", newline="") as file:
-        writer = csv.writer(file)
-        # Kopfzeile für zusätzliche Informationen
-        writer.writerow(
-            [
-                "start_x",
-                "start_y",
-                "image_size",
-                "patch_size",
-                "Defect Type",
-                "image_name",
-            ]
-        )
-        writer.writerow(
-            [start_x, start_y, square_size, patch_size, defect_type.value, filename]
-        )
-
-        # Kopfzeile für die Koordinaten
-        writer.writerow(["x", "y", "patch_size"])
-        # Koordinaten in die Datei schreiben
-        writer.writerows(coordinates)
-
-    print(f"CSV-Datei wurde erfolgreich unter {file_path} gespeichert.")
-
-
-# shows all areas that were marked as defects as squares on RGB Probe-Image
-def visual_representation(image, defect_positions_chipping, defect_positions_whiskers):
-    for x, y, patch_size in defect_positions_whiskers:
-        cv2.rectangle(image, (x, y), (x + patch_size, y + patch_size), (0, 0, 0), 2)
-    for x, y, patch_size in defect_positions_chipping:
-        cv2.rectangle(image, (x, y), (x + patch_size, y + patch_size), (0, 0, 255), 2)
-
-    # scales Picture for output
-    width_resized = 600
-    height_resized = int(
-        (width_resized / image.shape[1]) * image.shape[0]
-    )  # scaling height to width
-    resized_image = cv2.resize(image, (width_resized, height_resized))
-
-    cv2.imshow("Detected Defects", resized_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
 
 # Display the result
 print(f"\nNumber of Defects found: {len(defect_positions)}")
@@ -188,32 +189,27 @@ if show_image:
     )
 
 if safe_coordinates:
+    common_params = {
+        "start_x": start_x,
+        "start_y": start_y,
+        "square_size": square_size,
+        "patch_size": patch_size,
+        "filename": filename,
+    }
     safe_coordinates_to_CSV(
         defect_positions_chipping,
         defect_type=DefectType.CHIPPING,
-        start_x=start_x,
-        start_y=start_y,
-        square_size=square_size,
-        patch_size=patch_size,
-        filename=filename,
+        **common_params
     )
     safe_coordinates_to_CSV(
         defect_positions_whiskers,
         defect_type=DefectType.WHISKERS,
-        start_x=start_x,
-        start_y=start_y,
-        square_size=square_size,
-        patch_size=patch_size,
-        filename=filename,
+        **common_params
     )
     safe_coordinates_to_CSV(
         non_defect_position,
         defect_type=DefectType.NO_ERROR,
-        start_x=start_x,
-        start_y=start_y,
-        square_size=square_size,
-        patch_size=patch_size,
-        filename=filename,
+        **common_params
     )
 if safe_image:
     name_for_safed_image = os.path.split(filename)[-1]
