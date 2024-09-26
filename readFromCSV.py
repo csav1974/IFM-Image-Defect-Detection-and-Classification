@@ -23,10 +23,11 @@ def read_from_csv(csv_path):
             defect_type = DefectType.CHIPPING
         if defect_type == DefectType.WHISKERS.value:
             defect_type = DefectType.WHISKERS
+        if defect_type == DefectType.SCRATCHES.value:
+            defect_type = DefectType.SCRATCHES
         if defect_type == DefectType.NO_ERROR.value:
             defect_type = DefectType.NO_ERROR
         image_name = os.path.splitext(os.path.split(filename)[-1])[0]
-        next(reader)  # to skip values
         next(reader)  # to skip second header (x,y)
         for row in reader:
             coordinates.append(
