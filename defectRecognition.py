@@ -7,7 +7,7 @@ from enumDefectTypes import DefectType
 
 
 # shows all areas that were marked as defects as squares on RGB Probe-Image
-def visual_representation(image, defect_positions_chipping, defect_positions_whiskers):
+def visual_representation(image, defect_positions_chipping, defect_positions_whiskers, defect_positions_scratches):
     # Print positions to debug
     # print(f"Chipping Defects: {defect_positions_chipping}")
     # print(f"Whiskers Defects: {defect_positions_whiskers}")
@@ -26,6 +26,13 @@ def visual_representation(image, defect_positions_chipping, defect_positions_whi
     for x, y, patch_size in defect_positions_chipping:
         if 0 <= x < width and 0 <= y < height:
             cv2.rectangle(image, (x, y), (x + patch_size, y + patch_size), (0, 0, 255), 2)
+        else:
+            print(f"Skipping out-of-bounds defect at: {x}, {y}")
+
+    # Draw rectangles for scratches defects
+    for x, y, patch_size in defect_positions_scratches:
+        if 0 <= x < width and 0 <= y < height:
+            cv2.rectangle(image, (x, y), (x + patch_size, y + patch_size), (0, 255, 0), 2)
         else:
             print(f"Skipping out-of-bounds defect at: {x}, {y}")
 
@@ -85,7 +92,7 @@ def safe_coordinates_to_CSV(
 
 
 # Load Model. Assuming model is already trained
-model_name = "20240424_A2-2m$3D_10x_keras"
+model_name = "fullModel_v2"
 path_to_model = os.path.join("kerasModels", model_name)
 model = tf.keras.models.load_model(f"{path_to_model}.keras")
 IMG_SIZE = 32  # scales the patch size down (or up) to 32*32 Pixel
@@ -104,12 +111,13 @@ safe_image = True
 safe_coordinates = True
 
 # set the confident threshold of model prediction
-chipping_detection_threshold = 0.90
+chipping_detection_threshold = 0.80
 whiskers_detection_threshold = 0.90
+scratches_detection_threshold = 0.60
 
 
 # Define patch size
-patch_size = 140
+patch_size = 120
 
 # Define stride (optional)
 stride = patch_size // 2  # 50% overlap if stride = patch_size // 2
@@ -122,16 +130,16 @@ square_size = 0
 # Comment out if you want to exam the whole picture
 ############
 
-# height, width = work_image.shape
-# # Define the size of the square
-# square_size = 3000
+height, width = work_image.shape
+# Define the size of the square
+square_size = 6000
 
-# # Calculate the top-left corner of the square
-# start_x = (width - square_size) // 2
-# start_y = (height - square_size) // 2
-# # Crop the square around the center
-# image = image[start_y:start_y + square_size, start_x:start_x + square_size]
-# work_image = work_image[start_y:start_y + square_size, start_x:start_x + square_size]
+# Calculate the top-left corner of the square
+start_x = (width - square_size) // 2
+start_y = (height - square_size) // 2
+# Crop the square around the center
+image = image[start_y:start_y + square_size, start_x:start_x + square_size]
+work_image = work_image[start_y:start_y + square_size, start_x:start_x + square_size]
 
 # ###########
 
@@ -147,9 +155,11 @@ current_patch_number = 0
 defect_positions = []
 defect_positions_chipping = []
 defect_positions_whiskers = []
+defect_positions_scratches = []
 non_defect_position = []
 chipping_count = 0
 whiskers_count = 0
+scratches_count = 0
 
 
 # Divide the image into patches
@@ -173,6 +183,7 @@ for y in range(0, height - patch_size, stride):
         if (
             prediction[0][0] > whiskers_detection_threshold
             or prediction[0][1] > chipping_detection_threshold
+            or prediction[0][2] > scratches_detection_threshold
         ):  # Assuming threshold for defect = 0.3
             defect_positions.append((x, y, patch_size))
             if prediction[0][0] > whiskers_detection_threshold:
@@ -181,6 +192,9 @@ for y in range(0, height - patch_size, stride):
             if prediction[0][1] > chipping_detection_threshold:
                 chipping_count += 1
                 defect_positions_chipping.append((x, y, patch_size))
+            if prediction[0][2] > scratches_detection_threshold:
+                scratches_count += 1
+                defect_positions_scratches.append((x, y, patch_size))
         if prediction[0][2] > 0.999:
             non_defect_position.append((x, y, patch_size))
         current_patch_number += 1
@@ -193,7 +207,7 @@ for y in range(0, height - patch_size, stride):
 
 # Display the result
 print(f"\nNumber of Defects found: {len(defect_positions)}")
-print(f"Chipping Defects: {chipping_count}\n" f"Whiskers Defects: {whiskers_count}")
+print(f"Chipping Defects: {chipping_count}\n" f"Scratching Defects: {scratches_count}\n" f"Whiskers Defects: {whiskers_count}")
 
 image_to_show = image
 if show_image:
@@ -201,6 +215,7 @@ if show_image:
         image_to_show,
         defect_positions_chipping=defect_positions_chipping,
         defect_positions_whiskers=defect_positions_whiskers,
+        defect_positions_scratches=defect_positions_scratches,
     )
 
 if safe_coordinates:
@@ -219,6 +234,11 @@ if safe_coordinates:
     safe_coordinates_to_CSV(
         defect_positions_whiskers,
         defect_type=DefectType.WHISKERS,
+        **common_params
+    )
+    safe_coordinates_to_CSV(
+        defect_positions_scratches,
+        defect_type=DefectType.SCRATCHES,
         **common_params
     )
     safe_coordinates_to_CSV(

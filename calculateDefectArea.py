@@ -25,6 +25,8 @@ def calculate_defect_area(image_path, csv_folder):
             chipping_area = np.sum(defect_map == 0)
         if defect_type == DefectType.WHISKERS :
             whiskers_area = np.sum(defect_map == 0)
+        if defect_type == DefectType.SCRATCHES :
+            scratches_area = np.sum(defect_map == 0)
         defect_maps.append(defect_map)
 
     # defect_maps.append(calculate_unknown_defect_area(image)) #test
@@ -68,12 +70,14 @@ def calculate_defect_area(image_path, csv_folder):
                     "Chipping_Area_Relativ",
                     "Whiskers_Area_Total",
                     "Whiskers_Area_Relativ",
+                    "Scratches_Area_Total",
+                    "Scratches_Area_Relativ",
                     "Defect_Area_Total",
                     "Defect_Area_Relativ"
                 ]
             )
             writer.writerow(
-                [os.path.splitext(os.path.split(image_path)[-1])[0], chipping_area, (chipping_area / num_ones) * 100, whiskers_area, (whiskers_area / num_ones) * 100, num_zeros, ratio]
+                [os.path.splitext(os.path.split(image_path)[-1])[0], chipping_area, (chipping_area / num_ones) * 100, whiskers_area, (whiskers_area / num_ones) * 100, scratches_area, (scratches_area / num_ones) * 100, num_zeros, ratio]
             )
 
 
@@ -116,7 +120,8 @@ def csv_to_defect_map(image, csv_path):
             start_y : start_y + image_size, start_x : start_x + image_size
         ]
     num_non_probe_area = np.sum(cv2.cvtColor(image_resized, cv2.COLOR_BGR2GRAY) == 0)
-    if defect_type == DefectType.CHIPPING:
+    if (defect_type == DefectType.CHIPPING 
+        or defect_type == DefectType.SCRATCHES) :
         defect_map = calculate_defect_map_chipping(
             coordinates, image_resized, threshold=0.9
         )       
