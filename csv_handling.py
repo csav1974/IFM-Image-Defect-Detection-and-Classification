@@ -14,7 +14,7 @@ def read_from_csv(csv_path):
 
     with open(csv_path, mode="r", newline="") as file:
         reader = csv.reader(file)
-        next(reader)  # Überspringe die erste Kopfzeile
+        next(reader)  # Skip first Header
         first_row = next(reader)
         image_name, patch_size, stride, defect_type = first_row
         patch_size, stride = int(patch_size), int(stride)
@@ -28,7 +28,7 @@ def read_from_csv(csv_path):
             defect_type = DefectType.NO_ERROR
         if defect_type == "None":
             defect_type = None
-        next(reader)  # Überspringe die zweite Kopfzeile
+        next(reader)  # Skip second Header
         for row in reader:
             data_list.append(parse_csv_row(row))
 
@@ -51,28 +51,28 @@ def write_defect_data(filename,
     if defect_type :
         file_path = os.path.join(folder_name, f"{image_name}_{defect_type.value}.csv")
     else :
-        file_path = os.path.join(folder_name, f"{image_name}.csv")
-    # Erstellen des Ordners, falls er nicht existiert
+        file_path = os.path.join(folder_name, f"{image_name}_prediction.csv")
+
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
 
-    # Schreiben der Koordinaten in die CSV-Datei
     with open(file_path, mode="w", newline="") as file:
         writer = csv.writer(file)
         
-        # Schreiben der Metadaten
+        # write Metadata
         writer.writerow(["Image Name", "Patch Size", "Stride", "Defect Type"])
-        writer.writerow([filename, patch_size, stride, defect_type.value])
-
-        # Kopfzeile für die Koordinaten und Vorhersagen
+        if defect_type:
+            writer.writerow([filename, patch_size, stride, defect_type.value])
+        else:
+            writer.writerow([filename, patch_size, stride, "None"])
+        # write Header
         writer.writerow(
             ["x", "y", "Whiskers", "Chipping", "Scratch", "No Error"]
         )
 
-        # Daten in die Datei schreiben
         for row in data_list:
             x, y, prediction = row
-            # Runde jede Vorhersage auf 5 Nachkommastellen und schreibe sie in die CSV
+            # round data an write to csv
             formatted_prediction = [f"{p:.5f}" for p in prediction]
             writer.writerow([x, y] + formatted_prediction)
     print(f"CSV-File saved as {file_path}")
