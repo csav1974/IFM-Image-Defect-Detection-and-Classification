@@ -11,6 +11,13 @@ def calculate_noise(image):
 
     return mean
 
+def list_to_mean_noise(image, no_defect_list, patch_size):
+    mean_array = []
+    for x, y, _ in no_defect_list:
+        patch = image[y : y + patch_size, x : x + patch_size]
+        mean = calculate_noise(patch)
+        mean_array.append(mean)
+    return np.mean(mean_array)
 
 def images_to_mean_noise(folderpath, number_of_patches):
     mean_array = []
@@ -19,7 +26,7 @@ def images_to_mean_noise(folderpath, number_of_patches):
         image = cv2.imread(path)
         mean = calculate_noise(image=image)
         mean_array.append(mean)
-    print(f"mean returned:{np.mean(mean_array, axis = 0)}")
+    
     return np.mean(mean_array)
 
 

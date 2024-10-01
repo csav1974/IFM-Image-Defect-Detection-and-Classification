@@ -1,9 +1,11 @@
 import numpy as np
 import cv2
 import os
+import tkinter as tk
 from csv_handling import read_from_csv
 from dataCollection.savingDefcetsFromCSV import saveDefectsFromList
 from enumDefectTypes import DefectType
+from calculateDefectArea import calculate_defect_area_fromList
 
 def main():
     csv_path = 'predictionDataCSV/unknown.csv'  # Path to the CSV file
@@ -58,12 +60,12 @@ def main():
     cv2.setMouseCallback(window_name, mouse_callback)
 
     # Define callback functions for buttons
-    def save_image_callback(state):
+    def save_image_callback(state,  event=None):
         save_path = 'output_image.bmp'
         cv2.imwrite(save_path, display_image)
         print(f"Image saved to {save_path}.")
 
-    def save_whiskers_callback(state):
+    def save_whiskers_callback(state,  event=None):
         # Filter data_list for entries where prediction a > threshold_a
         threshold_a = cv2.getTrackbarPos('Threshold Whiskers', window_name) / 1000.0
         filtered_data_list = [(x, y, predictions) for x, y, predictions in data_list if predictions[0] > threshold_a]
@@ -71,7 +73,7 @@ def main():
         saveDefectsFromList(original_image, image_name, filtered_data_list, patch_size, defect_type)
         print(f"Saved ROIs for defect type: {defect_type}")
 
-    def save_chipping_callback(state):
+    def save_chipping_callback(state,  event=None):
         # Filter data_list for entries where prediction b > threshold_b
         threshold_b = cv2.getTrackbarPos('Threshold Chipping', window_name) / 1000.0
         filtered_data_list = [(x, y, predictions) for x, y, predictions in data_list if predictions[1] > threshold_b]
@@ -79,7 +81,7 @@ def main():
         saveDefectsFromList(original_image, image_name, filtered_data_list, patch_size, defect_type)
         print(f"Saved ROIs for defect type: {defect_type}")
 
-    def save_scratching_callback(state):
+    def save_scratching_callback(state,  event=None):
         # Filter data_list for entries where prediction c > threshold_c
         threshold_c = cv2.getTrackbarPos('Threshold Scratching', window_name) / 1000.0
         filtered_data_list = [(x, y, predictions) for x, y, predictions in data_list if predictions[2] > threshold_c]
@@ -87,7 +89,7 @@ def main():
         saveDefectsFromList(original_image, image_name, filtered_data_list, patch_size, defect_type)
         print(f"Saved ROIs for defect type: {defect_type}")
 
-    def save_no_defect_callback(state):
+    def save_no_defect_callback(state, event=None):
         # Filter data_list for entries where prediction d > threshold_d
         threshold_d = cv2.getTrackbarPos('Threshold No Defect', window_name) / 1000.0
         filtered_data_list = [(x, y, predictions) for x, y, predictions in data_list if predictions[3] > threshold_d]
@@ -95,12 +97,63 @@ def main():
         saveDefectsFromList(original_image, image_name, filtered_data_list, patch_size, defect_type)
         print(f"Saved ROIs for defect type: {defect_type}")
 
+    def show_defect_data_callback(state,  event=None):
+        threshold_w = cv2.getTrackbarPos('Threshold Whiskers', window_name) / 1000.0
+        threshold_c = cv2.getTrackbarPos('Threshold Chipping', window_name) / 1000.0
+        threshold_s = cv2.getTrackbarPos('Threshold Scratching', window_name) / 1000.0
+        data_list_with_defectType = []
+        data_list_w = [(x, y, predictions) for x, y, predictions in data_list if predictions[0] > threshold_w]
+        data_list_with_defectType.append([data_list_w, DefectType.WHISKERS])
+        data_list_c = [(x, y, predictions) for x, y, predictions in data_list if predictions[1] > threshold_c]
+        data_list_with_defectType.append([data_list_c, DefectType.CHIPPING])
+        data_list_s = [(x, y, predictions) for x, y, predictions in data_list if predictions[2] > threshold_s]
+        data_list_with_defectType.append([data_list_s, DefectType.SCRATCHES])
+
+        data_list_with_defectType.append([[(x, y, predictions) for x, y, predictions in data_list if predictions[3] > 0.995], DefectType.NO_ERROR])
+        
+        # Calculate defect area
+        defect_data = calculate_defect_area_fromList(image, data_list_with_defectType, patch_size)
+        whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio = defect_data
+        def create_data_window():
+
+            # Create a tkinter window to display the results
+            root = tk.Tk()
+            root.title("Defect Data")
+
+            # Add a frame to contain the labels for better formatting
+            frame = tk.Frame(root, padx=20, pady=20)
+            frame.pack()
+
+            # Create labels with better formatting for each piece of information
+            tk.Label(frame, text="Whiskers Area:", font=("Helvetica", 12), anchor="w").grid(row=0, column=0, sticky="w")
+            tk.Label(frame, text=f"{whiskers_area}", font=("Helvetica", 12), anchor="e").grid(row=0, column=1, sticky="e")
+
+            tk.Label(frame, text="Chipping Area:", font=("Helvetica", 12), anchor="w").grid(row=1, column=0, sticky="w")
+            tk.Label(frame, text=f"{chipping_area}", font=("Helvetica", 12), anchor="e").grid(row=1, column=1, sticky="e")
+
+            tk.Label(frame, text="Scratches Area:", font=("Helvetica", 12), anchor="w").grid(row=2, column=0, sticky="w")
+            tk.Label(frame, text=f"{scratches_area}", font=("Helvetica", 12), anchor="e").grid(row=2, column=1, sticky="e")
+
+            tk.Label(frame, text="Defect Pixels:", font=("Helvetica", 12), anchor="w").grid(row=3, column=0, sticky="w")
+            tk.Label(frame, text=f"{defect_pixel}", font=("Helvetica", 12), anchor="e").grid(row=3, column=1, sticky="e")
+
+            tk.Label(frame, text="Working Pixels:", font=("Helvetica", 12), anchor="w").grid(row=4, column=0, sticky="w")
+            tk.Label(frame, text=f"{working_pixel}", font=("Helvetica", 12), anchor="e").grid(row=4, column=1, sticky="e")
+
+            tk.Label(frame, text="Defect-to-Working Ratio:", font=("Helvetica", 12), anchor="w").grid(row=5, column=0, sticky="w")
+            tk.Label(frame, text=f"{ratio:.2f}%", font=("Helvetica", 12), anchor="e").grid(row=5, column=1, sticky="e")
+
+            # Start tkinter loop
+            root.mainloop()
+        create_data_window()
+        
     # Create buttons
     cv2.createButton('Save Image', save_image_callback, None, cv2.QT_PUSH_BUTTON, 0)
     cv2.createButton('Save Whiskers ROIs', save_whiskers_callback, None, cv2.QT_PUSH_BUTTON, 0)
     cv2.createButton('Save Chipping ROIs', save_chipping_callback, None, cv2.QT_PUSH_BUTTON, 0)
     cv2.createButton('Save Scratching ROIs', save_scratching_callback, None, cv2.QT_PUSH_BUTTON, 0)
     cv2.createButton('Save No Defect ROIs', save_no_defect_callback, None, cv2.QT_PUSH_BUTTON, 0)
+    cv2.createButton('Show Defect Data', show_defect_data_callback, None, cv2.QT_PUSH_BUTTON, 0)
 
     # Main loop
     while True:
@@ -193,16 +246,7 @@ def main():
         key = cv2.waitKey(100) & 0xFF
         if key == 27:  # ESC to exit
             break
-        elif key == ord('s'):  # 's' to save the image
-            save_image_callback()
-        elif key == ord('w'):  # 'w' to save ROIs for Whiskers
-            save_whiskers_callback()
-        elif key == ord('c'):  # 'c' to save ROIs for Chipping
-            save_chipping_callback(1)
-        elif key == ord('r'):  # 'r' to save ROIs for Scratching
-            save_scratching_callback()
-        elif key == ord('n'):  # 'n' to save ROIs for No Defect
-            save_no_defect_callback()
+        
 
     cv2.destroyAllWindows()
 
