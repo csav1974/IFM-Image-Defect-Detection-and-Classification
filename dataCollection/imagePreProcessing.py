@@ -1,10 +1,10 @@
-import cv2 as cv
+import cv2
 import numpy as np
 import os
+import tkinter as tk
+from tkinter import filedialog
 
-
-
-def bmpToProbeOnly_manual(filename, scale_factor=0.03):
+def bmpToProbeOnly_circle(filename, scale_factor=0.03):
     """
     Allows manual selection of a circular region in an image using a GUI.
     A scaled-down version of the image is used for the GUI to improve performance.
@@ -12,10 +12,10 @@ def bmpToProbeOnly_manual(filename, scale_factor=0.03):
 
     Args:
         filename (str): Path to the input image file.
-        scale_factor (float): Factor to scale down the image for the GUI (default is 0.25).
+        scale_factor (float): Factor to scale down the image for the GUI (default is 0.03).
     """
     # Load the original full-resolution image
-    image = cv.imread(filename)
+    image = cv2.imread(filename)
     if image is None:
         print("Error loading image")
         return
@@ -26,7 +26,7 @@ def bmpToProbeOnly_manual(filename, scale_factor=0.03):
     # Scale down the image for the GUI
     scaled_width = int(orig_width * scale_factor)
     scaled_height = int(orig_height * scale_factor)
-    scaled_image = cv.resize(image, (scaled_width, scaled_height), interpolation=cv.INTER_AREA)
+    scaled_image = cv2.resize(image, (scaled_width, scaled_height), interpolation=cv2.INTER_AREA)
 
     # Initial center and radius on the scaled image
     center_x = scaled_width // 2
@@ -34,29 +34,29 @@ def bmpToProbeOnly_manual(filename, scale_factor=0.03):
     radius = min(center_x, center_y) - 10  # Initial radius
 
     # Create a window named 'Preview'
-    cv.namedWindow('Preview')
+    cv2.namedWindow('Preview')
 
     # Callback function to update the preview when trackbar values change
     def update_preview(x):
         # Get current positions of trackbars
-        cx = cv.getTrackbarPos('Center X', 'Preview')
-        cy = cv.getTrackbarPos('Center Y', 'Preview')
-        r = cv.getTrackbarPos('Radius', 'Preview')
+        cx = cv2.getTrackbarPos('Center X', 'Preview')
+        cy = cv2.getTrackbarPos('Center Y', 'Preview')
+        r = cv2.getTrackbarPos('Radius', 'Preview')
 
         # Create a mask with a filled circle at the specified center and radius
         mask = np.zeros((scaled_height, scaled_width), dtype=np.uint8)
-        cv.circle(mask, (cx, cy), r, 255, thickness=-1)
+        cv2.circle(mask, (cx, cy), r, 255, thickness=-1)
 
         # Apply the mask to the scaled image to get the circular cutout
-        masked_image = cv.bitwise_and(scaled_image, scaled_image, mask=mask)
+        masked_image = cv2.bitwise_and(scaled_image, scaled_image, mask=mask)
 
         # Display the preview image
-        cv.imshow('Preview', masked_image)
+        cv2.imshow('Preview', masked_image)
 
     # Create trackbars for adjusting the center coordinates and radius
-    cv.createTrackbar('Center X', 'Preview', center_x, scaled_width, update_preview)
-    cv.createTrackbar('Center Y', 'Preview', center_y, scaled_height, update_preview)
-    cv.createTrackbar('Radius', 'Preview', radius, min(scaled_width, scaled_height)//2, update_preview)
+    cv2.createTrackbar('Center X', 'Preview', center_x, scaled_width, update_preview)
+    cv2.createTrackbar('Center Y', 'Preview', center_y, scaled_height, update_preview)
+    cv2.createTrackbar('Radius', 'Preview', radius, min(scaled_width, scaled_height)//2, update_preview)
 
     # Initial call to display the image
     update_preview(0)
@@ -65,12 +65,12 @@ def bmpToProbeOnly_manual(filename, scale_factor=0.03):
     print("Press 's' to save the result, or 'q' to quit without saving.")
 
     while True:
-        key = cv.waitKey(1) & 0xFF
+        key = cv2.waitKey(1) & 0xFF
         if key == ord('s'):
             # Get final positions of trackbars
-            cx = cv.getTrackbarPos('Center X', 'Preview')
-            cy = cv.getTrackbarPos('Center Y', 'Preview')
-            r = cv.getTrackbarPos('Radius', 'Preview')
+            cx = cv2.getTrackbarPos('Center X', 'Preview')
+            cy = cv2.getTrackbarPos('Center Y', 'Preview')
+            r = cv2.getTrackbarPos('Radius', 'Preview')
 
             # Map the center and radius back to the original image size
             scale_inv = 1 / scale_factor
@@ -80,107 +80,135 @@ def bmpToProbeOnly_manual(filename, scale_factor=0.03):
 
             # Create the final mask and masked image on the original image
             mask = np.zeros((orig_height, orig_width), dtype=np.uint8)
-            cv.circle(mask, (orig_cx, orig_cy), orig_r, 255, thickness=-1)
-            masked_image = cv.bitwise_and(image, image, mask=mask)
+            cv2.circle(mask, (orig_cx, orig_cy), orig_r, 255, thickness=-1)
+            masked_image = cv2.bitwise_and(image, image, mask=mask)
 
             # Create an alpha channel based on the mask
-            b, g, r_img = cv.split(masked_image)
+            b, g, r_img = cv2.split(masked_image)
             alpha_channel = mask
-            output_image = cv.merge((b, g, r_img, alpha_channel))
+            output_image = cv2.merge((b, g, r_img, alpha_channel))
 
             # Close all OpenCV windows
-            cv.destroyAllWindows()
+            cv2.destroyAllWindows()
 
             # Save the result
             return output_image
         elif key == ord('q'):
             print("Quitting without saving.")
+            cv2.destroyAllWindows()
             return None
-            
 
+def bmpToProbeOnly_rectangle(filename, scale_factor=0.03):
+    """
+    Allows manual selection of a rectangular region in an image using a GUI.
+    A scaled-down version of the image is used for the GUI to improve performance.
+    The final image is saved in full resolution.
 
+    Args:
+        filename (str): Path to the input image file.
+        scale_factor (float): Factor to scale down the image for the GUI (default is 0.03).
+    """
+    # Load the original full-resolution image
+    image = cv2.imread(filename)
+    if image is None:
+        print("Error loading image")
+        return
 
-# Transform an IFM Image to a blurred graylevel Image for further processing.
-def TransformToBlurredGray(image):
-    gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-    ksize = (5, 5)  # Kernelgröße
-    sigmaX = 1.0  # Standardabweichung in X-Richtung
-    blurred_image = cv.GaussianBlur(gray, ksize, sigmaX)
-    return blurred_image
+    # Get dimensions of the original image
+    orig_height, orig_width = image.shape[:2]
 
+    # Scale down the image for the GUI
+    scaled_width = int(orig_width * scale_factor)
+    scaled_height = int(orig_height * scale_factor)
+    scaled_image = cv2.resize(image, (scaled_width, scaled_height), interpolation=cv2.INTER_AREA)
 
-# use HoughCircles to find only the probe itself.
-# returns a list of circles.
-def findCircles(minimalDiameter, maximalDiameter, image):
-    circles = cv.HoughCircles(
-        image,
-        cv.HOUGH_GRADIENT,
-        dp=3,
-        minDist=3000,
-        param1=150,
-        param2=5,
-        minRadius=minimalDiameter // 2,
-        maxRadius=maximalDiameter // 2,
-    )
-    return circles
+    # Initial center and size on the scaled image
+    center_x = scaled_width // 2
+    center_y = scaled_height // 2
+    width = scaled_width // 2
+    height = scaled_height // 2
 
+    # Create a window named 'Preview'
+    cv2.namedWindow('Preview')
 
-# takes the image and the blurred Version and matches it to the original image to create a image thats only the Probe with anything else black
-def bmpToProbeOnly(filename):
-    image = cv.imread(filename)
-    blurredImage = TransformToBlurredGray(image)
-    height, width, _ = image.shape
-    min_diameter = int(min([height, width]) * 0.95)
-    max_diameter = int(min([height, width]))
-    circles = findCircles(
-        minimalDiameter=min_diameter, maximalDiameter=max_diameter, image=blurredImage
-    )
-    if circles is not None:
-        circles = np.uint16(np.around(circles))
-        center = (circles[0, 0][0], circles[0, 0][1])
-        radius = circles[0, 0][2]
+    # Callback function to update the preview when trackbar values change
+    def update_preview(x):
+        # Get current positions of trackbars
+        cx = cv2.getTrackbarPos('Center X', 'Preview')
+        cy = cv2.getTrackbarPos('Center Y', 'Preview')
+        w = cv2.getTrackbarPos('Width', 'Preview')
+        h = cv2.getTrackbarPos('Height', 'Preview')
 
-        # cv.circle(image, center, radius + 5, (0, 255, 0), 4)  # Umrandung des Kreises
+        # Create a mask with a filled rectangle at the specified center and size
+        mask = np.zeros((scaled_height, scaled_width), dtype=np.uint8)
+        top_left = (max(0, cx - w // 2), max(0, cy - h // 2))
+        bottom_right = (min(scaled_width, cx + w // 2), min(scaled_height, cy + h // 2))
+        cv2.rectangle(mask, top_left, bottom_right, 255, thickness=-1)
 
-        # cuts out the square of the Probe
-        probeOnlyImage = image[
-            center[1] - (radius) : center[1] + (radius),
-            center[0] - (radius) : center[0] + (radius),
-        ]
+        # Apply the mask to the scaled image to get the rectangular cutout
+        masked_image = cv2.bitwise_and(scaled_image, scaled_image, mask=mask)
 
-        # makes anything but the Probe black
-        height, width = probeOnlyImage.shape[:2]
-        center = (width // 2, height // 2)
-        mask = np.zeros((height, width), dtype=np.uint8)
-        cv.circle(mask, center, radius, (255), thickness=-1)
-        masked_image = cv.bitwise_and(probeOnlyImage, probeOnlyImage, mask=mask)
-        b, g, r = cv.split(masked_image)
-        alpha_channel = mask
-        return cv.merge((b, g, r, alpha_channel))
+        # Display the preview image
+        cv2.imshow('Preview', masked_image)
 
+    # Create trackbars for adjusting the center coordinates and size
+    cv2.createTrackbar('Center X', 'Preview', center_x, scaled_width, update_preview)
+    cv2.createTrackbar('Center Y', 'Preview', center_y, scaled_height, update_preview)
+    cv2.createTrackbar('Width', 'Preview', width, scaled_width, update_preview)
+    cv2.createTrackbar('Height', 'Preview', height, scaled_height, update_preview)
 
-def bmpToSquare(filename):
-    image = cv.imread(filename)
-    height, width, _ = image.shape
+    # Initial call to display the image
+    update_preview(0)
 
-    square_size = width // 2
+    print("Adjust the center, width, and height using the trackbars.")
+    print("Press 's' to save the result, or 'q' to quit without saving.")
 
-    # Calculate the top-left corner of the square
-    start_x = (width - square_size) // 2
-    start_y = (height - square_size) // 2
-    # Crop the square around the center
-    image = image[start_y : start_y + square_size, start_x : start_x + square_size]
+    while True:
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('s'):
+            # Get final positions of trackbars
+            cx = cv2.getTrackbarPos('Center X', 'Preview')
+            cy = cv2.getTrackbarPos('Center Y', 'Preview')
+            w = cv2.getTrackbarPos('Width', 'Preview')
+            h = cv2.getTrackbarPos('Height', 'Preview')
 
-    return image
+            # Map the center and size back to the original image size
+            scale_inv = 1 / scale_factor
+            orig_cx = int(cx * scale_inv)
+            orig_cy = int(cy * scale_inv)
+            orig_w = int(w * scale_inv)
+            orig_h = int(h * scale_inv)
 
+            # Create the final mask and masked image on the original image
+            mask = np.zeros((orig_height, orig_width), dtype=np.uint8)
+            top_left = (max(0, orig_cx - orig_w // 2), max(0, orig_cy - orig_h // 2))
+            bottom_right = (min(orig_width, orig_cx + orig_w // 2), min(orig_height, orig_cy + orig_h // 2))
+            cv2.rectangle(mask, top_left, bottom_right, 255, thickness=-1)
+            masked_image = cv2.bitwise_and(image, image, mask=mask)
 
-def saveBMPtoFolder(image, input_folder):
+            # Create an alpha channel based on the mask
+            b, g, r_img = cv2.split(masked_image)
+            alpha_channel = mask
+            output_image = cv2.merge((b, g, r_img, alpha_channel))
+
+            # Close all OpenCV windows
+            cv2.destroyAllWindows()
+
+            # Save the result
+            return output_image
+        elif key == ord('q'):
+            print("Quitting without saving.")
+            cv2.destroyAllWindows()
+            return None
+
+def saveBMPtoFolder(image, image_name="default"):
     """
     Saves a BMP image to a specified folder with a unique filename.
-    If 'probeOnly_0.bmp' already exists, it appends a number to the filename.
+    If a file with the same name exists, it appends a number to the filename.
 
     Args:
         image: The image to save.
+        image_name (str): Name of the image file to be saved.
 
     Returns:
         str: The full path to the saved file.
@@ -189,54 +217,112 @@ def saveBMPtoFolder(image, input_folder):
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    # create Filename based on the folder it comes from
-    base_filename = os.path.basename(input_folder)
+    # Create filename based on the provided image_name
     extension = ".bmp"
-    filename = os.path.join(folder, f"{base_filename}{extension}")
+    filename = os.path.join(folder, f"{image_name}{extension}")
 
-    print(f"saved to {filename}")
+    # Ensure unique filename if file already exists
+    count = 1
+    base_filename = filename
+    while os.path.exists(filename):
+        filename = os.path.join(folder, f"{image_name}_{count}{extension}")
+        count += 1
+
+    print(f"Saved to {filename}")
     # Save the image
-    cv.imwrite(filename, image)
+    cv2.imwrite(filename, image)
 
     return filename
 
-
-def finishedProcessing(filename, folderpath):
-    progressed_filename = saveBMPtoFolder(
-        image=bmpToProbeOnly(filename), input_folder=folderpath
-    )
-    return progressed_filename
-
-def image_Processing_manual(filename, folderpath):
-    progressed_image = bmpToProbeOnly_manual(filename)
-    if progressed_image is None:
-        print("No Image was Safed")
+def image_Processing_manual(filename, image_name="default", shape="circle"):
+    if shape == "circle":
+        processed_image = bmpToProbeOnly_circle(filename)
+    elif shape == "rectangle":
+        processed_image = bmpToProbeOnly_rectangle(filename)
+    else:
+        print("Invalid shape selected.")
+        return None
+    if processed_image is None:
+        print("No image was saved")
         return None
     else:
-
-        progressed_filename = saveBMPtoFolder(
-            image=progressed_image, input_folder=folderpath
+        processed_filename = saveBMPtoFolder(
+            image=processed_image, image_name=image_name
         )
-        return progressed_filename
-    
+        return processed_filename
+def main():
+    # Initialize the main window
+    root = tk.Tk()
+    root.title("Image Selector")
 
-def dataCollectionSquare(filename, folderpath):
-    progressed_filename = saveBMPtoFolder(
-        image=bmpToSquare(filename), input_folder=folderpath
-    )
-    return progressed_filename
+    # Variables to store the selected image, shape, and image name
+    selected_image = tk.StringVar()
+    shape_var = tk.StringVar(value="circle")  # default shape is circle
+    image_name_var = tk.StringVar()  # To store the name of the image
 
+    # Function to select image
+    def select_image():
+        filename = filedialog.askopenfilename(title="Select Image", 
+                                              filetypes=[("All files", "*.*")])
+        selected_image.set(filename)
+        print(f"Selected image: {filename}")
 
-# # Bild auf gewünschte Größe skalieren
-# width = 1000  # gewünschte Breite
-# height = int((width / image.shape[1]) * image.shape[0])  # Höhe entsprechend skalieren
-# resized_image = cv.resize(image, (width, height))
+    # Function to start editing
+    def edit_image():
+        filename = selected_image.get()
+        shape = shape_var.get()
+        image_name = image_name_var.get()
 
-# cv.imshow('Detected Defects', resized_image)
-# cv.waitKey(0)
-# cv.destroyAllWindows()
+        if not filename:
+            print("No image selected.")
+            return
 
-# dataCollectionSquare("sampleOnlyBMP/20240610_A6-2m_10x$3D.bmp", "sampleOnlyBMP")
+        if not image_name:
+            print("No image name provided.")
+            return
 
-image_Processing_manual("/home/georg/Work/UniversityJob/defectDetection/IFM_Data/2024/20240424$prj/20240424_A2-2m$3D_10x/texture.bmp", "/home/georg/Work/UniversityJob/defectDetection/IFM_Data/2024/20240424$prj/20240424_A2-2m$3D_10x")
+        # Close the Tkinter window
+        root.destroy()
+        # Call image processing function
+        image_Processing_manual(filename, image_name=image_name, shape=shape)
 
+    # Create widgets
+    select_button = tk.Button(root, text="Select Image", command=select_image)
+    select_button.pack(pady=10)
+
+    # Shape selection radio buttons
+    shape_label = tk.Label(root, text="Select Shape:")
+    shape_label.pack()
+    circle_radio = tk.Radiobutton(root, text="Circle", variable=shape_var, value="circle")
+    circle_radio.pack()
+    rectangle_radio = tk.Radiobutton(root, text="Rectangle", variable=shape_var, value="rectangle")
+    rectangle_radio.pack()
+
+    # Image Name entry field
+    image_name_label = tk.Label(root, text="Enter Image Name:")
+    image_name_label.pack(pady=10)
+    image_name_entry = tk.Entry(root, textvariable=image_name_var)
+    image_name_entry.pack(pady=5)
+
+    # Edit Image button
+    edit_button = tk.Button(root, text="Edit Image", command=edit_image)
+    edit_button.pack(pady=10)
+
+    root.update_idletasks()
+
+    # Calculate the position to center the window
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+
+    window_width = root.winfo_width() + screen_width // 4
+    window_height = root.winfo_height() + screen_height // 4
+
+    x = (screen_width // 2) - (window_width // 2)
+    y = (screen_height // 2) - (window_height // 2)
+
+    # Set the window position
+    root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
