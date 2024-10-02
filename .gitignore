@@ -162,12 +162,11 @@ cython_debug/
 #.idea/
 
 # DataFolders
-dataCollection/detectedErrors/
-dataCollection/trainingdata/
-dataCollection/trainingData_v2/
-dataCollection/trainingdatasafe/
+dataCollection/Data/
 defectPositionCSV/
 sampleOnlyBMP/
 exampleImage/
 kerasModels/
+testing/
+predictionDataCSV/
 
