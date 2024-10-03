@@ -86,8 +86,11 @@ def bmpToProbeOnly_circle(filename, scale_factor=0.03):
             # Create an alpha channel based on the mask
             b, g, r_img = cv2.split(masked_image)
             alpha_channel = mask
-            output_image = cv2.merge((b, g, r_img, alpha_channel))
-
+            merged_image = cv2.merge((b, g, r_img, alpha_channel))
+            if orig_cx + orig_r <= orig_width and orig_cy + orig_r <= orig_height:
+                output_image = merged_image[orig_cy - orig_r : orig_cy + orig_r, orig_cx - orig_r : orig_cx + orig_r]
+            else: 
+                output_image = merged_image
             # Close all OpenCV windows
             cv2.destroyAllWindows()
 
@@ -189,8 +192,10 @@ def bmpToProbeOnly_rectangle(filename, scale_factor=0.03):
             # Create an alpha channel based on the mask
             b, g, r_img = cv2.split(masked_image)
             alpha_channel = mask
-            output_image = cv2.merge((b, g, r_img, alpha_channel))
-
+            if orig_cy - (orig_h // 2) >= 0 and orig_cy + (orig_h // 2) <= orig_height and orig_cx - (orig_w // 2) >= 0 and orig_cx + (orig_w // 2) <= orig_width:
+                output_image = image[orig_cy - (orig_h // 2) : orig_cy + (orig_h // 2), orig_cx - (orig_w // 2) : orig_cx + (orig_w // 2)]
+            else: 
+                output_image = cv2.merge((b, g, r_img, alpha_channel))
             # Close all OpenCV windows
             cv2.destroyAllWindows()
 
