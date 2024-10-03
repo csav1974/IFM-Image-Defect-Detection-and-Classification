@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 
 
 # The path is fixed because it is only used for training the data and will not be present in the final program
-DATADIR = "dataCollection/Data/TrainingData_v6"
+DATADIR = "dataCollection/Data/TrainingData_v7"
 
 CATEGORIES = [
     "Whiskers",
@@ -45,13 +45,13 @@ y = []
 for features, label in training_data:
     X.append(features)
     if label == 0:
-        y.append([1, 0, 0, 0])  # [1, 0, 0, 0] for category 1
+        y.append([1, 0, 0, 0])  # [1, 0, 0, 0] for category Whiskers
     elif label == 1:
-        y.append([0, 1, 0, 0])  # [0, 1, 0, 0] for category 2
+        y.append([0, 1, 0, 0])  # [0, 1, 0, 0] for category Chipping
     elif label == 2:
-        y.append([0, 0, 1, 0])  # [0, 0, 1, 0] for category 3
+        y.append([0, 0, 1, 0])  # [0, 0, 1, 0] for category Scratching
     elif label == 3:
-        y.append([0, 0, 0, 1])  # [0, 0, 0, 1] for category 4
+        y.append([0, 0, 0, 1])  # [0, 0, 0, 1] for category No Defect Area
 
 # Convert and normalize data
 X = np.array(X).reshape(-1, IMG_SIZE, IMG_SIZE, 1)
@@ -108,12 +108,12 @@ model.add(keras.layers.Activation("softmax"))
 model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
 # Early stopping to prevent overfitting
-early_stopping = keras.callbacks.EarlyStopping(monitor="val_loss", patience=3)
+early_stopping = keras.callbacks.EarlyStopping(monitor="val_loss", patience=5)
 
 # Train the model using the generators
 model.fit(
     train_generator,
-    epochs=25,
+    epochs=30,
     validation_data=validation_generator,
     callbacks=[early_stopping],
     # workers=4,  # Set the number of workers for data loading
@@ -122,7 +122,7 @@ model.fit(
 )
 
 # Save the model
-model_name = "fullModel_v2"
+model_name = "fullModel_v5"
 path_to_model = os.path.join("kerasModels", model_name)
 model.save(f"{path_to_model}.keras")
 
