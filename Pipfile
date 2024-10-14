@@ -12,6 +12,7 @@ pillow = "*"
 tensorflow = "*"
 scikit-learn = "*"
 keras = "*"
+shapely = "*"
 
 [dev-packages]
 
