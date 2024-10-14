@@ -12,7 +12,7 @@ def bmpToProbeOnly_circle(filename, scale_factor=0.03):
 
     Args:
         filename (str): Path to the input image file.
-        scale_factor (float): Factor to scale down the image for the GUI (default is 0.03).
+        scale_factor (float): Factor to scale down the image for the GUI (default is 0.03 for a 900MB File).
     """
     # Load the original full-resolution image
     image = cv2.imread(filename)
@@ -255,6 +255,7 @@ def image_Processing_manual(filename, image_name="default", shape="circle"):
             image=processed_image, image_name=image_name
         )
         return processed_filename
+    
 def main():
     # Initialize the main window
     root = tk.Tk()
@@ -271,6 +272,11 @@ def main():
                                               filetypes=[("All files", "*.*")])
         selected_image.set(filename)
         print(f"Selected image: {filename}")
+
+        # Get the parent folder name
+        parent_folder = os.path.basename(os.path.dirname(filename))
+        # Set the image_name_var to the parent folder name
+        image_name_var.set(parent_folder)
 
     # Function to start editing
     def edit_image():
