@@ -7,14 +7,18 @@ from dataCollection.savingDefcetsFromCSV import saveDefectsFromList
 from enumDefectTypes import DefectType
 from defectHandling.calculateDefectArea import calculate_defect_area_fromList
 from defectHandling.calculateDefectCount import calculate_defect_count
+from defectHandling.saveDefectDataToCSV import save_results_to_CSV
 from shapely.geometry import Polygon, Point
 
 def main():
-    csv_path = 'predictionDataCSV/20240829_A2-3/20240829_A2-3_prediction.csv'  # Path to the CSV file
+    work_folder_path = 'predictionDataCSV/20240829_A2-3'
+    sample_name = os.path.split(work_folder_path)[-1]
+    csv_path = os.path.join(work_folder_path, f"{sample_name}_prediction.csv")
+    image_path = os.path.join(work_folder_path, f"{sample_name}.bmp")
+    # csv_path = 'predictionDataCSV/20240829_A1-1/20240829_A1-1_prediction.csv'
+    # image_path = "predictionDataCSV/20240829_A1-1/20240829_A1-1.bmp"
     image_name, patch_size, stride, _, data_list = read_from_csv(csv_path)
     image_name = os.path.splitext(os.path.split(image_name)[-1])[0]
-    # Read the image
-    image_path = "predictionDataCSV/20240829_A2-3/20240829_A2-3.bmp"
     image = cv2.imread(image_path)
     if image is None:
         print(f"Could not load the image: {image_path}")
@@ -132,12 +136,15 @@ def main():
             no_error_th = no_error_th - 0.01
         data_list_with_defectType.append([[(x, y, predictions) for x, y, predictions in data_list if predictions[3] > no_error_th], DefectType.NO_ERROR])
 
+
+        whiskers_count = calculate_defect_count(merged_polygons, DefectType.WHISKERS)
+        chipping_count = calculate_defect_count(merged_polygons, DefectType.CHIPPING)        
+
         # Calculate defect area
         defect_data = calculate_defect_area_fromList(image, data_list_with_defectType, patch_size)
         whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio = defect_data
 
-        whiskers_count = calculate_defect_count(merged_polygons, DefectType.WHISKERS)
-        chipping_count = calculate_defect_count(merged_polygons, DefectType.CHIPPING)        
+        save_results_to_CSV(work_folder_path, whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio, whiskers_count, chipping_count)
 
         def create_data_window():
             # Create a tkinter window to display the results
