@@ -10,7 +10,10 @@ from defectHandling.whiskersDefectHandling import calculate_unknown_defect_area
 from defectHandling.calculate_mean_background import list_to_mean_noise as mean_noise
 
 
-def calculate_defect_area_fromList(image, data_list, patch_size = 32):
+def calculate_defect_area_fromList(image, data_list, patch_size = 32,):
+
+    save_image = True
+
     defect_maps = []
     mean_background_value = mean_noise(image, data_list[-1][0][:1000], patch_size) # data_list[-1][0] is a array with all no_defect positions
     data_list.pop(-1)
@@ -46,6 +49,8 @@ def calculate_defect_area_fromList(image, data_list, patch_size = 32):
 
     print_results(num_zeros, num_ones, ratio)
 
+    if save_image:
+        save_image_with_defects(defect_maps, image)
 
 
     return whiskers_area, chipping_area, scratches_area, num_zeros, num_ones, ratio
@@ -147,6 +152,7 @@ def save_image_with_defects(maps, image):
         if (map[1] == DefectType.SCRATCHES):
             image[mask] = (0, 255, 0)
 
+
     # # scales Picture for output
     # width_resized = 4000
     # height_resized = int(
@@ -164,6 +170,8 @@ def save_image_with_defects(maps, image):
     folder_for_example_Images = "exampleImage"
     final_name = os.path.join(folder_for_example_Images, name_for_saved_image)
     cv2.imwrite(final_name, image)
+
+    print(f"defects save to {final_name}")
 
 
 def csv_to_defect_map(image, csv_path):
@@ -218,11 +226,11 @@ def list_to_defect_map(image, patch_size, data_list, defect_type, background_val
     if (defect_type == DefectType.CHIPPING 
         or defect_type == DefectType.SCRATCHES) :
         defect_map = calculate_defect_map_chipping(
-            data_list, image, threshold=0.9, patch_size=patch_size
+            data_list, image, threshold=0.70, patch_size=patch_size
         )       
     if defect_type == DefectType.WHISKERS:
         defect_map = calculate_defect_map_whiskers(
-            data_list, image, threshold=0.1, patch_size=patch_size, background_value=background_value
+            data_list, image, threshold=0.17, patch_size=patch_size, background_value=background_value
         )
 
     return defect_map, num_non_probe_area

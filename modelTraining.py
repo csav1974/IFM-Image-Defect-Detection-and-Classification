@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 
 
 # The path is fixed because it is only used for training the data and will not be present in the final program
-DATADIR = "dataCollection/Data/TrainingData_v7"
+DATADIR = "dataCollection/Data/Training20240829_v2"
 
 CATEGORIES = [
     "Whiskers",
@@ -19,7 +19,7 @@ CATEGORIES = [
     "No_Error",
 ]  # This can later be changed to detect more defects
 
-IMG_SIZE = 32
+IMG_SIZE = 128
 
 training_data = []
 
@@ -122,7 +122,7 @@ model.fit(
 )
 
 # Save the model
-model_name = "fullModel_v5"
+model_name = "Model_20240829_v2"
 path_to_model = os.path.join("kerasModels", model_name)
 model.save(f"{path_to_model}.keras")
 

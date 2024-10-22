@@ -111,8 +111,8 @@ safe_image = True
 safe_coordinates = True
 
 # set the confident threshold of model prediction
-chipping_detection_threshold = 0.80
-whiskers_detection_threshold = 0.90
+chipping_detection_threshold = 0.60
+whiskers_detection_threshold = 0.80
 scratches_detection_threshold = 0.60
 
 
@@ -130,16 +130,16 @@ square_size = 0
 # Comment out if you want to exam the whole picture
 ############
 
-height, width = work_image.shape
-# Define the size of the square
-square_size = 6000
+# height, width = work_image.shape
+# # Define the size of the square
+# square_size = 6000
 
-# Calculate the top-left corner of the square
-start_x = (width - square_size) // 2
-start_y = (height - square_size) // 2
-# Crop the square around the center
-image = image[start_y:start_y + square_size, start_x:start_x + square_size]
-work_image = work_image[start_y:start_y + square_size, start_x:start_x + square_size]
+# # Calculate the top-left corner of the square
+# start_x = (width - square_size) // 5
+# start_y = (height - square_size) // 5
+# # Crop the square around the center
+# image = image[start_y:start_y + square_size, start_x:start_x + square_size]
+# work_image = work_image[start_y:start_y + square_size, start_x:start_x + square_size]
 
 # ###########
 

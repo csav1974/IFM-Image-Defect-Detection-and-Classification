@@ -9,7 +9,7 @@ def defect_recognition(image_path = None, model_name = None):
     # Load Model. Assuming model is already trained
     path_to_model = os.path.join("kerasModels", model_name)
     model = tf.keras.models.load_model(f"{path_to_model}.keras")
-    IMG_SIZE = 32  # scales the patch size down (or up) to 32*32 Pixel
+    IMG_SIZE = 128  # scales the patch size down (or up) to IMG_SIZE*IMG_SIZE Pixel
 
     # Load the microscope image
     image = cv2.imread(image_path)
@@ -18,10 +18,10 @@ def defect_recognition(image_path = None, model_name = None):
 
 
     # Define patch size
-    patch_size = 120
+    patch_size = 128
 
     # Define stride (optional)
-    stride = patch_size // 2  # 50% overlap if stride = patch_size // 2
+    stride = patch_size  // 2 # 50% overlap if stride = patch_size // 2
 
     start_x = 0
     start_y = 0
@@ -82,4 +82,12 @@ def defect_recognition(image_path = None, model_name = None):
     write_defect_data(filename=image_path, patch_size=patch_size, stride=stride, data_list=data_list)
 
 
-defect_recognition(image_path="sampleOnlyBMP/20240424_A2-2m$3D_10x.bmp", model_name="fullModel_v2")
+
+defect_recognition(image_path="predictionDataCSV/20240829_A1-1/20240829_A1-1.bmp", model_name="Model_20240829_v2")
+defect_recognition(image_path="predictionDataCSV/20240829_A1-2/20240829_A1-2.bmp", model_name="Model_20240829_v2")
+defect_recognition(image_path="predictionDataCSV/20240829_A1-3/20240829_A1-3.bmp", model_name="Model_20240829_v2")
+defect_recognition(image_path="predictionDataCSV/20240829_A1-4/20240829_A1-4.bmp", model_name="Model_20240829_v2")
+defect_recognition(image_path="predictionDataCSV/20240829_A1-5/20240829_A1-5.bmp", model_name="Model_20240829_v2")
+defect_recognition(image_path="predictionDataCSV/20240829_A2-1/20240829_A2-1.bmp", model_name="Model_20240829_v2")
+defect_recognition(image_path="predictionDataCSV/20240829_A2-3/20240829_A2-3.bmp", model_name="Model_20240829_v2")
+defect_recognition(image_path="predictionDataCSV/20240829_A-steel-2/20240829_A-steel-2.bmp", model_name="Model_20240829_v2")

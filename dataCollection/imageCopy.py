@@ -38,14 +38,14 @@ def copy_files_with_rename(source_dir, target_dir):
 
 
 # Beispielaufruf des Programms
-source_directory_parent = "dataCollection/detectedErrors/machinefoundErrors/20240610_A6-2m_10x$3D_Square/Whiskers"  # Pfad zum Quellordner
+source_directory_parent = "dataCollection/Data/detectedErrors/machinefoundErrors/20240829_A1-1"  # Pfad zum Quellordner
 target_directory_parent = (
-    "dataCollection/trainingData_v2/Whiskers"  # Pfad zum Zielordner
+    "dataCollection/Data/Perfect_Data/20240829"  # Pfad zum Zielordner
 )
-"""
-for defect in ["Chipping", "Whiskers", "No_Error"]: 
+
+for defect in ["Chipping", "Whiskers", "Scratches", "No_Error"]: 
     source_directory = os.path.join(source_directory_parent, f"{defect}")
     target_directory = os.path.join(target_directory_parent, f"{defect}")
     copy_files_with_rename(source_directory, target_directory)
-"""
-copy_files_with_rename(source_directory_parent, target_directory_parent)
+
+# copy_files_with_rename("dataCollection/Data/detectedErrors/machinefoundErrors/20240829_A1-2/Whiskers", "dataCollection/Data/Perfect_Data/20240829/Whiskers")

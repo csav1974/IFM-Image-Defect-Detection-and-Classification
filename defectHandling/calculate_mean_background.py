@@ -6,7 +6,7 @@ import cv2
 def calculate_noise(image):
     ksize = (15, 15)  # Kernelgröße
     sigmaX = 1.0  # Standardabweichung in X-Richtung
-    blurred_image = cv2.GaussianBlur(image, ksize, sigmaX)
+    blurred_image = cv2.GaussianBlur(image, ksize, sigmaX) / 255
     mean = np.mean(blurred_image, axis=(0, 1))
 
     return mean

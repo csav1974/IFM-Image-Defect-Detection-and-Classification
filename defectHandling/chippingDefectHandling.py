@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 
-def calculate_defect_map_chipping(coordinates, image, threshold=0.9, patch_size = 32):
+def calculate_defect_map_chipping(coordinates, image, threshold=0.8, patch_size = 32):
     image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) / 255
 
     # Initialize defect_map with ones (same shape as the grayscale image)

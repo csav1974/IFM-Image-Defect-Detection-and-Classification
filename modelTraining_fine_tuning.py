@@ -9,7 +9,7 @@ import keras
 from sklearn.model_selection import train_test_split
 
 # Define the data directory and categories
-DATADIR = "dataCollection/Data/TrainingData_v7"
+DATADIR = "dataCollection/Data/Perfect_Data/20240829"
 
 CATEGORIES = [
     "Whiskers",
@@ -18,7 +18,7 @@ CATEGORIES = [
     "No_Error",
 ]  # This can later be changed to detect more defects
 
-IMG_SIZE = 32  # Use the same image size as in your existing model
+IMG_SIZE = 64  # Use the same image size as in your existing model
 
 training_data = []
 
@@ -79,7 +79,7 @@ train_generator = datagen.flow(X_train, y_train, batch_size=32)
 validation_generator = validation_datagen.flow(X_val, y_val, batch_size=32)
 
 # Load your existing Keras model
-existing_model_path = 'kerasModels/fullModel_v5.keras'  # Replace with the actual path
+existing_model_path = 'kerasModels/fullModel_v5_test.keras'  # Replace with the actual path
 base_model = keras.models.load_model(existing_model_path)
 
 # Optionally, freeze the base model layers
