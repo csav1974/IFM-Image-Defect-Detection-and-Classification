@@ -8,10 +8,11 @@ from enumDefectTypes import DefectType
 from defectHandling.calculateDefectArea import calculate_defect_area_fromList
 from defectHandling.calculateDefectCount import calculate_defect_count
 from defectHandling.saveDefectDataToCSV import save_results_to_CSV
+import pixelToRealWordl
 from shapely.geometry import Polygon, Point
 
 def main():
-    work_folder_path = 'predictionDataCSV/20240829_A2-3'
+    work_folder_path = 'predictionDataCSV/20240829_A1-2'
     sample_name = os.path.split(work_folder_path)[-1]
     csv_path = os.path.join(work_folder_path, f"{sample_name}_prediction.csv")
     image_path = os.path.join(work_folder_path, f"{sample_name}.bmp")
@@ -83,9 +84,11 @@ def main():
 
     # Define callback functions for buttons
     def save_image_callback(state, event=None):
-        save_path = 'output_image.bmp'
-        cv2.imwrite(save_path, display_image)
-        print(f"Image saved to {save_path}.")
+        save_image_name = 'output_image.bmp'
+        folder_for_example_Images = "exampleImage"
+        final_name = os.path.join(folder_for_example_Images, save_image_name)
+        cv2.imwrite(final_name, display_image)
+        print(f"Image saved to {final_name}.")
 
     def save_whiskers_callback(state, event=None):
         # Filter data_list for entries where prediction a > threshold_a
@@ -144,9 +147,18 @@ def main():
         defect_data = calculate_defect_area_fromList(image, data_list_with_defectType, patch_size)
         whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio = defect_data
 
+        diameter_in_pixel = original_image.shape[0]
+        pixel_to_mm_factor = float(diameter_in_pixel / 30)
+        defect_data_mm = []
+        for data in defect_data[:5]:
+            defect_data_mm.append(pixelToRealWordl.pixel_to_square_mm(data, pixel_to_mm_factor * pixel_to_mm_factor))
+        defect_data_mm.append(defect_data[-1])
         save_results_to_CSV(work_folder_path, whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio, whiskers_count, chipping_count)
 
-        def create_data_window():
+        def create_data_window(defect_data, unit_of_measurement = "mm²"):
+
+            whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio = defect_data
+
             # Create a tkinter window to display the results
             root = tk.Tk()
             root.title("Defect Data")
@@ -156,33 +168,33 @@ def main():
             frame.pack()
 
             # Create labels with better formatting for each piece of information
-            tk.Label(frame, text="Whiskers Area:", font=("Helvetica", 12), anchor="w").grid(row=0, column=0, sticky="w")
-            tk.Label(frame, text=f"{whiskers_area}", font=("Helvetica", 12), anchor="e").grid(row=0, column=1, sticky="e")
+            tk.Label(frame, text=f"Whiskers Area in {unit_of_measurement}:", font=("Helvetica", 12), anchor="w").grid(row=0, column=0, sticky="w")
+            tk.Label(frame, text=f"{whiskers_area:.3f}", font=("Helvetica", 12), anchor="e").grid(row=0, column=1, sticky="e")
 
-            tk.Label(frame, text="Chipping Area:", font=("Helvetica", 12), anchor="w").grid(row=1, column=0, sticky="w")
-            tk.Label(frame, text=f"{chipping_area}", font=("Helvetica", 12), anchor="e").grid(row=1, column=1, sticky="e")
+            tk.Label(frame, text=f"Chipping Area in {unit_of_measurement}:", font=("Helvetica", 12), anchor="w").grid(row=1, column=0, sticky="w")
+            tk.Label(frame, text=f"{chipping_area:.3f}", font=("Helvetica", 12), anchor="e").grid(row=1, column=1, sticky="e")
 
-            tk.Label(frame, text="Scratches Area:", font=("Helvetica", 12), anchor="w").grid(row=2, column=0, sticky="w")
-            tk.Label(frame, text=f"{scratches_area}", font=("Helvetica", 12), anchor="e").grid(row=2, column=1, sticky="e")
+            tk.Label(frame, text=f"Scratches Area in {unit_of_measurement}:", font=("Helvetica", 12), anchor="w").grid(row=2, column=0, sticky="w")
+            tk.Label(frame, text=f"{scratches_area:.3f}", font=("Helvetica", 12), anchor="e").grid(row=2, column=1, sticky="e")
 
-            tk.Label(frame, text="Defect Pixels:", font=("Helvetica", 12), anchor="w").grid(row=3, column=0, sticky="w")
-            tk.Label(frame, text=f"{defect_pixel}", font=("Helvetica", 12), anchor="e").grid(row=3, column=1, sticky="e")
+            tk.Label(frame, text=f"Defect Area  in {unit_of_measurement}:", font=("Helvetica", 12), anchor="w").grid(row=3, column=0, sticky="w")
+            tk.Label(frame, text=f"{defect_pixel:.3f}", font=("Helvetica", 12), anchor="e").grid(row=3, column=1, sticky="e")
 
-            tk.Label(frame, text="Working Pixels:", font=("Helvetica", 12), anchor="w").grid(row=4, column=0, sticky="w")
-            tk.Label(frame, text=f"{working_pixel}", font=("Helvetica", 12), anchor="e").grid(row=4, column=1, sticky="e")
+            tk.Label(frame, text=f"Working Area  in {unit_of_measurement}:", font=("Helvetica", 12), anchor="w").grid(row=4, column=0, sticky="w")
+            tk.Label(frame, text=f"{working_pixel:.3f}", font=("Helvetica", 12), anchor="e").grid(row=4, column=1, sticky="e")
 
-            tk.Label(frame, text="Defect-to-Working Ratio:", font=("Helvetica", 12), anchor="w").grid(row=5, column=0, sticky="w")
+            tk.Label(frame, text=f"Defect-to-Working Ratio:", font=("Helvetica", 12), anchor="w").grid(row=5, column=0, sticky="w")
             tk.Label(frame, text=f"{ratio:.2f}%", font=("Helvetica", 12), anchor="e").grid(row=5, column=1, sticky="e")
 
-            tk.Label(frame, text="Whiskers Count:", font=("Helvetica", 12), anchor="w").grid(row=6, column=0, sticky="w")
+            tk.Label(frame, text=f"Whiskers Count:", font=("Helvetica", 12), anchor="w").grid(row=6, column=0, sticky="w")
             tk.Label(frame, text=f"{whiskers_count}", font=("Helvetica", 12), anchor="e").grid(row=6, column=1, sticky="e")
 
-            tk.Label(frame, text="Chipping Count:", font=("Helvetica", 12), anchor="w").grid(row=7, column=0, sticky="w")
+            tk.Label(frame, text=f"Chipping Count:", font=("Helvetica", 12), anchor="w").grid(row=7, column=0, sticky="w")
             tk.Label(frame, text=f"{chipping_count}", font=("Helvetica", 12), anchor="e").grid(row=7, column=1, sticky="e")
 
             # Start tkinter loop
             root.mainloop()
-        create_data_window()
+        create_data_window(defect_data=defect_data_mm, unit_of_measurement="mm²")
 
     def merge_rectangle_callback(state, event=None):
         nonlocal merged_polygons
