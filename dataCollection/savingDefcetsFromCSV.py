@@ -40,7 +40,7 @@ def safeDefectsFromCSV(image_path, csv_path):
     # Save each ROI as a BMP file
     for idx, roi in enumerate(rois):
         filename = os.path.join(
-            final_path, defect_type.value, f"{defect_type.value}_{idx + 1}.bmp"
+            final_path, defect_type.value, f"{image_name}_{defect_type.value}_{idx + 1}.bmp"
         )
         cv2.imwrite(filename, roi)
         print(f"files safed to {filename}")
@@ -66,7 +66,7 @@ def saveDefectsFromList(image, image_name, data_list, patch_size, defect_type : 
     # Save each ROI as a BMP file
     for idx, roi in enumerate(rois):
         filename = os.path.join(
-            final_path, defect_type.value, f"{defect_type.value}_{idx + 1}.bmp"
+            final_path, defect_type.value, f"{image_name}_{defect_type.value}_{idx + 1}.bmp"
         )
         cv2.imwrite(filename, roi)
         print(f"files safed to {filename}")
