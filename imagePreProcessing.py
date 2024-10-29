@@ -1,8 +1,30 @@
 import cv2
+from PIL import Image
 import numpy as np
 import os
 import tkinter as tk
 from tkinter import filedialog
+
+
+def load_large_image(image_path):
+    try:
+        image = cv2.imread(image_path)
+        if image is None:
+            raise ValueError("cv2 could not read image.")
+        return image
+    
+    except Exception as e:
+        print(e)
+        
+        # Fallback on Pillow, if cv2 fails
+        try:
+            pil_image = Image.open(image_path)
+            image_cv2 = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+            return image_cv2
+        except Exception as pil_e:
+            print(pil_e)
+            return None
+
 
 def bmpToProbeOnly_circle(filename, scale_factor=0.03):
     """
@@ -15,7 +37,7 @@ def bmpToProbeOnly_circle(filename, scale_factor=0.03):
         scale_factor (float): Factor to scale down the image for the GUI (default is 0.03 for a 900MB File).
     """
     # Load the original full-resolution image
-    image = cv2.imread(filename)
+    image = load_large_image(filename)
     if image is None:
         print("Error loading image")
         return
@@ -43,15 +65,21 @@ def bmpToProbeOnly_circle(filename, scale_factor=0.03):
         cy = cv2.getTrackbarPos('Center Y', 'Preview')
         r = cv2.getTrackbarPos('Radius', 'Preview')
 
-        # Create a mask with a filled circle at the specified center and radius
-        mask = np.zeros((scaled_height, scaled_width), dtype=np.uint8)
-        cv2.circle(mask, (cx, cy), r, 255, thickness=-1)
+        # Verify the radius is non-negative and within bounds
+        if r < 0:
+            r = 0
 
-        # Apply the mask to the scaled image to get the circular cutout
-        masked_image = cv2.bitwise_and(scaled_image, scaled_image, mask=mask)
+        # Create a mask only if the radius is valid
+        if r > 0 and 0 <= cx < scaled_width and 0 <= cy < scaled_height:
+            # Create a mask with a filled circle at the specified center and radius
+            mask = np.zeros((scaled_height, scaled_width), dtype=np.uint8)
+            cv2.circle(mask, (cx, cy), r, 255, thickness=-1)
 
-        # Display the preview image
-        cv2.imshow('Preview', masked_image)
+            # Apply the mask to the scaled image to get the circular cutout
+            masked_image = cv2.bitwise_and(scaled_image, scaled_image, mask=mask)
+            # Display the preview image
+            cv2.imshow('Preview', masked_image)
+
 
     # Create trackbars for adjusting the center coordinates and radius
     cv2.createTrackbar('Center X', 'Preview', center_x, scaled_width, update_preview)
