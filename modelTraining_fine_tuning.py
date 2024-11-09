@@ -9,7 +9,8 @@ import keras
 from sklearn.model_selection import train_test_split
 
 # Define the data directory and categories
-DATADIR = "dataCollection/Data/Perfect_Data/20240829"
+DATADIR = "dataCollection/Data/detectedErrors/machinefoundErrors/20240829_A1-2"
+existing_model_path = 'kerasModels/Model_20240829_v2.keras'  # Replace with the actual path
 
 CATEGORIES = [
     "Whiskers",
@@ -18,7 +19,7 @@ CATEGORIES = [
     "No_Error",
 ]  # This can later be changed to detect more defects
 
-IMG_SIZE = 64  # Use the same image size as in your existing model
+IMG_SIZE = 128  # Use the same image size as in your existing model
 
 training_data = []
 
@@ -63,9 +64,6 @@ X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_st
 # Data augmentation for training data
 datagen = tf.keras.preprocessing.image.ImageDataGenerator(
     rotation_range=360,
-    width_shift_range=0.1,
-    height_shift_range=0.1,
-    zoom_range=0.1,
     horizontal_flip=True,
     vertical_flip=True,
     fill_mode="nearest",
@@ -79,7 +77,6 @@ train_generator = datagen.flow(X_train, y_train, batch_size=32)
 validation_generator = validation_datagen.flow(X_val, y_val, batch_size=32)
 
 # Load your existing Keras model
-existing_model_path = 'kerasModels/fullModel_v5_test.keras'  # Replace with the actual path
 base_model = keras.models.load_model(existing_model_path)
 
 # Optionally, freeze the base model layers
@@ -96,7 +93,7 @@ for layer in base_model.layers:
 
 # Continue adding layers with unique names
 x = keras.layers.Flatten(name='flatten_new')(x)
-x = keras.layers.Dense(64, activation='relu', name='dense_new_1')(x)
+x = keras.layers.Dense(128, activation='relu', name='dense_new_1')(x)
 x = keras.layers.Dropout(0.5, name='dropout_new')(x)
 output_layer = keras.layers.Dense(len(CATEGORIES), activation='softmax', name='output_layer')(x)
 
@@ -137,7 +134,8 @@ history_fine = model.fit(
 )
 
 # Save the model
-model_name = "improvedModel_v1"
+old_model_name= os.path.splitext(os.path.split(existing_model_path)[-1])[0]
+model_name = f"{old_model_name}_improvedModel_v1"
 path_to_model = os.path.join("kerasModels", model_name)
 model.save(f"{path_to_model}.keras")
 

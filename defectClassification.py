@@ -12,7 +12,7 @@ import pixelToRealWordl
 from shapely.geometry import Polygon, Point
 
 def main():
-    work_folder_path = 'predictionDataCSV/20240829_A1-2'
+    work_folder_path = 'predictionDataCSV/20240829_A1-3'
     sample_name = os.path.split(work_folder_path)[-1]
     csv_path = os.path.join(work_folder_path, f"{sample_name}_prediction.csv")
     image_path = os.path.join(work_folder_path, f"{sample_name}.bmp")
@@ -145,14 +145,17 @@ def main():
 
         # Calculate defect area
         defect_data = calculate_defect_area_fromList(image, data_list_with_defectType, patch_size)
-        whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio = defect_data
-
+    
+        # Convert defect data to mm
+        diameter_sample = 30
         diameter_in_pixel = original_image.shape[0]
-        pixel_to_mm_factor = float(diameter_in_pixel / 30)
+        pixel_to_mm_factor = float(diameter_in_pixel / diameter_sample)
         defect_data_mm = []
         for data in defect_data[:5]:
             defect_data_mm.append(pixelToRealWordl.pixel_to_square_mm(data, pixel_to_mm_factor * pixel_to_mm_factor))
         defect_data_mm.append(defect_data[-1])
+
+        whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio = defect_data_mm
         save_results_to_CSV(work_folder_path, whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio, whiskers_count, chipping_count)
 
         def create_data_window(defect_data, unit_of_measurement = "mm²"):

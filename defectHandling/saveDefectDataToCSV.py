@@ -15,15 +15,15 @@ def save_results_to_CSV(folder_path, whiskers_area, chipping_area, scratches_are
         writer.writerow(
             [
                 "Image_Name",
-                "Whiskers_Area_Total",
+                "Whiskers_Area_mm²",
                 "Whiskers_Count",
                 "Whiskers_Area_Relativ",
-                "Chipping_Area_Total",
+                "Chipping_Area_mm²",
                 "Chipping_Count",
                 "Chipping_Area_Relativ",
-                "Scratches_Area_Total",
+                "Scratches_Area_mm²",
                 "Scratches_Area_Relativ",
-                "Defect_Area_Total",
+                "Defect_Area_mm²",
                 "Defect_Area_Relativ"
             ]
         )
