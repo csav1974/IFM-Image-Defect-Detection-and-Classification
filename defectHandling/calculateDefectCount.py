@@ -38,17 +38,17 @@ def calculate_defect_count(polygon_data, defect_type : DefectType) :
     # Step 2: Sort the areas in ascending order
     polygon_areas.sort()
 
-    # Step 3: Calculate how many polygons represent the smallest 20%
-    smallest_10_percent_count = max(1, int(polygon_count * 0.2))  # At least 1 polygon
+    # Step 3: Calculate how many polygons represent the smallest 25%
+    smallest_25_percent_count = max(1, int(polygon_count * 0.25))  # At least 1 polygon
     
     # Step 4: Select the smallest 10% of polygons
-    smallest_polygons = polygon_areas[:smallest_10_percent_count]
+    smallest_polygons = polygon_areas[:smallest_25_percent_count]
 
     # Step 5: Sum the area of the smallest 10% of polygons
     total_area_of_smallest = sum(smallest_polygons)
 
     # Step 6: Calculate the average area of the smallest polygons
-    average_area_of_smallest = total_area_of_smallest / smallest_10_percent_count
+    average_area_of_smallest = total_area_of_smallest / smallest_25_percent_count
 
 
     # Perform integer division of each polygon's area by the average area
@@ -61,4 +61,5 @@ def calculate_defect_count(polygon_data, defect_type : DefectType) :
             division_result = 1
         division_sum += division_result
 
+   
     return int(division_sum)
