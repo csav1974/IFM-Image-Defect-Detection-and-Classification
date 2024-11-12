@@ -5,12 +5,17 @@ from enumDefectTypes import DefectType
 
 def saveDefectsFromList(image, image_name, data_list, patch_size, defect_type : DefectType):
 
+    # Assuming the script is always run from the project root directory (or a known directory within it)
+    project_root = os.getcwd()
+
+    # Specify the target folder within the project root
+    base_path = os.path.join(project_root, "dataCollection/Data/detectedErrors/machinefoundErrors")
+
     rois = []
     for x, y, _ in data_list:
         roi = image[y : y + patch_size, x : x + patch_size]
         rois.append(roi)
 
-    base_path = "dataCollection/Data/detectedErrors/machinefoundErrors"
     final_path = os.path.join(base_path, image_name)
     # Creates the subfolder if it doesn’t already exist
     if not os.path.exists(final_path):
