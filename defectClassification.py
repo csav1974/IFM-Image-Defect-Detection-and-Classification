@@ -2,8 +2,8 @@ import numpy as np
 import cv2
 import os
 import tkinter as tk
-from csv_handling import read_from_csv
-from dataCollection.savingDefcetsFromCSV import saveDefectsFromList
+from csvHandling.readFromPredictionCSV import read_from_csv
+from defectHandling.saveDefects.saveDefectsFromList import saveDefectsFromList
 from enumDefectTypes import DefectType
 from defectHandling.calculateDefectArea import calculate_defect_area_fromList
 from defectHandling.calculateDefectCount import calculate_defect_count
@@ -147,7 +147,7 @@ def main():
         defect_data = calculate_defect_area_fromList(image, data_list_with_defectType, patch_size)
     
         # Convert defect data to mm
-        diameter_sample = 30
+        diameter_sample = 30 
         diameter_in_pixel = original_image.shape[0]
         pixel_to_mm_factor = float(diameter_in_pixel / diameter_sample)
         defect_data_mm = []

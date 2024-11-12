@@ -1,8 +1,7 @@
 import cv2 as cv
 import numpy as np
 import os
-from dataCollection.imagePreProcessing import finishedProcessing as imageProcessing
-import dataCollection.filemanagement as filemanagement
+import dataCollection.defectDetectionClassic.filemanagement as filemanagement
 from enumDefectTypes import DefectType
 
 

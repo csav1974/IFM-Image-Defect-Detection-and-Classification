@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 import os
-from csv_handling import write_defect_data
+from csvHandling.writePredictionCSV import write_defect_data
 
 def defect_recognition(image_path = None, model_name = None):
 
@@ -23,13 +23,15 @@ def defect_recognition(image_path = None, model_name = None):
     # Define stride (optional)
     stride = patch_size  // 2 # 50% overlap if stride = patch_size // 2
 
-    start_x = 0
-    start_y = 0
-    square_size = 0
 
-    # this part is used if only a part of the image should be examed for faster runtime.
+    # this part is used if only a part of the image should be examed for faster runtime. 
+    # Only used for quick testing.
     # Comment out if you want to exam the whole picture
     # ############
+
+    # start_x = 0
+    # start_y = 0
+    # square_size = 0
 
     # height, width = work_image.shape
     # # Define the size of the square
@@ -77,17 +79,16 @@ def defect_recognition(image_path = None, model_name = None):
 
             current_patch_number += 1
             print(f"Patch: {current_patch_number} / {number_of_patches}")
+            # progress_in_perzent = current_patch_number * 100 / number_of_patches
+            # print(f"{progress_in_perzent:.2f}%")
             # print(prediction)
 
     write_defect_data(filename=image_path, patch_size=patch_size, stride=stride, data_list=data_list)
 
 
+def main():
+    defect_recognition(image_path="predictionDataCSV/20240829_A1-3/20240829_A1-3.bmp", model_name="Model_20240829_v4")
 
-defect_recognition(image_path="predictionDataCSV/20240829_A1-1/20240829_A1-1.bmp", model_name="Model_20240829_v2")
-defect_recognition(image_path="predictionDataCSV/20240829_A1-2/20240829_A1-2.bmp", model_name="Model_20240829_v2")
-defect_recognition(image_path="predictionDataCSV/20240829_A1-3/20240829_A1-3.bmp", model_name="Model_20240829_v2")
-defect_recognition(image_path="predictionDataCSV/20240829_A1-4/20240829_A1-4.bmp", model_name="Model_20240829_v2")
-defect_recognition(image_path="predictionDataCSV/20240829_A1-5/20240829_A1-5.bmp", model_name="Model_20240829_v2")
-defect_recognition(image_path="predictionDataCSV/20240829_A2-1/20240829_A2-1.bmp", model_name="Model_20240829_v2")
-defect_recognition(image_path="predictionDataCSV/20240829_A2-3/20240829_A2-3.bmp", model_name="Model_20240829_v2")
-defect_recognition(image_path="predictionDataCSV/20240829_A-steel-2/20240829_A-steel-2.bmp", model_name="Model_20240829_v2")
+if __name__ == "__main__":
+    main()
+

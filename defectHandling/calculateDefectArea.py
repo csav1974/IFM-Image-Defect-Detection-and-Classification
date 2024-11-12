@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import os
 import csv
-from csv_handling import read_from_csv
+from csvHandling.readFromPredictionCSV import read_from_csv
 from enumDefectTypes import DefectType
 from defectHandling.chippingDefectHandling import calculate_defect_map_chipping
 from defectHandling.whiskersDefectHandling import calculate_defect_map_whiskers
@@ -226,7 +226,7 @@ def list_to_defect_map(image, patch_size, data_list, defect_type, background_val
     if (defect_type == DefectType.CHIPPING 
         or defect_type == DefectType.SCRATCHES) :
         defect_map = calculate_defect_map_chipping(
-            data_list, image, threshold=0.70, patch_size=patch_size
+            data_list, image, threshold=0.60, patch_size=patch_size
         )       
     if defect_type == DefectType.WHISKERS:
         defect_map = calculate_defect_map_whiskers(

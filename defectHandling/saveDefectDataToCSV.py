@@ -2,7 +2,6 @@ import os
 import csv
 
 
-
 def save_results_to_CSV(folder_path, whiskers_area, chipping_area, scratches_area, num_zeros, num_ones, ratio, whisker_count, chipping_count):
     sample_name = os.path.split(folder_path)[-1]
 

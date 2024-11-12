@@ -79,5 +79,11 @@ def augment_images(folder_path, max_new_images):
 
     print(f"Image augmentation completed. {len(augmented_images)} images are saved in the folder '{output_folder}'.")
 
-# Example function call with max_new_images set to 100
-augment_images("dataCollection/Data/Training20240829_v3/No_Error", max_new_images=12000)
+
+def main():
+
+    # Example function call with max_new_images set to 100
+    augment_images("dataCollection/Data/Training20240829_v3/No_Error", max_new_images=100)
+
+if __name__ == "__main__":
+    main

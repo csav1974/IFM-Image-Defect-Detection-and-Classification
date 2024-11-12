@@ -1,6 +1,5 @@
 import cv2 as cv
-import dataCollection.filemanagement as filemanagement
-from dataCollection.imagePreProcessing import finishedProcessing as imageProcessing
+import dataCollection.defectDetectionClassic.filemanagement as filemanagement
 from enumDefectTypes import DefectType
 
 
@@ -50,12 +49,6 @@ def chippingDetection(filepath, folderpath, show_Image):
         cv.imshow("Defekte", resized_image)
         cv.waitKey(0)
         cv.destroyAllWindows()
-
-
-def finishedSearchChipping(folderpath, show_Image):
-    filenameAndPath = filemanagement.find_largest_file(folderpath)
-    filenameAndPath = imageProcessing(filenameAndPath, folderpath)
-    chippingDetection(filenameAndPath, folderpath, show_Image)
 
 
 ####test
