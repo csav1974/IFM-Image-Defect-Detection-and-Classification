@@ -227,6 +227,17 @@ def main():
 
         print("Merged overlapping rectangles into polygons.")
 
+
+        ##### testing part ######
+
+
+        # from defectHandling.saveDefects.saveDefectPolygons import save_polygons_to_bmp
+        # save_polygons_to_bmp(image=original_image, merged_polygons=merged_polygons)
+        # print("saved all polygons")
+
+        
+        ##########################
+
     def merge_overlapping_polygons(polygons):
         merged = []
         while polygons:
