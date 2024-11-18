@@ -9,20 +9,17 @@ def defect_recognition(image_path = None, model_name = None):
     # Load Model. Assuming model is already trained
     path_to_model = os.path.join("kerasModels", model_name)
     model = tf.keras.models.load_model(f"{path_to_model}.keras")
-    IMG_SIZE = 128  # scales the patch size down (or up) to IMG_SIZE*IMG_SIZE Pixel
+    IMG_SIZE = 128  # scales the patch resolution down to IMG_SIZE*IMG_SIZE Pixel
 
     # Load the microscope image
     image = cv2.imread(image_path)
     work_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-
 
     # Define patch size
     patch_size = 128
 
     # Define stride (optional)
     stride = patch_size  // 2 # 50% overlap if stride = patch_size // 2
-
 
     # this part is used if only a part of the image should be examed for faster runtime. 
     # Only used for quick testing.
@@ -45,7 +42,6 @@ def defect_recognition(image_path = None, model_name = None):
     # work_image = work_image[start_y:start_y + square_size, start_x:start_x + square_size]
 
     # ###########
-
 
     height, width = work_image.shape
 
@@ -87,7 +83,7 @@ def defect_recognition(image_path = None, model_name = None):
 
 
 def main():
-    defect_recognition(image_path="predictionDataCSV/20240829_A1-3/20240829_A1-3.bmp", model_name="Model_20240829_v4")
+    defect_recognition(image_path="predictionDataCSV/20240829_A1-3/20240829_A1-3.bmp", model_name="Model_v4")
 
 if __name__ == "__main__":
     main()
