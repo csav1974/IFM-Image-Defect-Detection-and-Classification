@@ -57,10 +57,8 @@ X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.3, random_st
 
 # Data augmentation for training data
 datagen = tf.keras.preprocessing.image.ImageDataGenerator(
-    rotation_range=360,
     horizontal_flip=True,
     vertical_flip=True,
-    fill_mode="nearest",
 )
 
 # Data generator for validation data (no augmentation)
@@ -112,7 +110,7 @@ model.fit(
 )
 
 # Save the model
-model_name = "Model_20240829_v4"
+model_name = "Model_v8"
 path_to_model = os.path.join("kerasModels", model_name)
 model.save(f"{path_to_model}.keras")
 

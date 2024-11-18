@@ -67,10 +67,10 @@ def calculate_defect_map_whiskers(coordinates, image, threshold=0.05, patch_size
 
     return defect_map
 
-"""
-This part of the Code is currently not used but can be used to calculate the area of all 
-irregular regions on the sample. However, it only gives a routh hint for the defect area.
-"""
+##########
+# This part of the Code is currently not used but can be used to calculate the area of all 
+# irregular regions on the sample. However, it only gives a routh hint for the defect area.
+##########
 def calculate_unknown_defect_area(image, threshold=0.3):
     background_value = (
         mean_noise(

@@ -1,7 +1,40 @@
 from enumDefectTypes import DefectType
 from shapely.geometry import Polygon
 
+
 def calculate_defect_count(polygon_data, defect_type : DefectType) :
+    """
+    Calculates the defect count for a given defect type in a list of polygons.
+
+    This function analyzes a list of polygon data, verifies its structure, 
+    and calculates the number of defects of the specified type. 
+    For general defect types, the calculation involves the smallest 25% 
+    of polygons based on their area.
+
+    Parameters:
+    ----------
+    polygon_data : list
+        A list of dictionaries, each containing:
+        - 'polygon': A `shapely.geometry.Polygon` object.
+        - 'color': A tuple representing the polygon's color.
+        - 'defect_type': The type of defect (DefectType).
+
+    defect_type : DefectType
+        The type of defect to count (e.g., CHIPPING).
+
+    Returns:
+    -------
+    int
+        The calculated defect count:
+        - If the defect type is `CHIPPING`, returns the number of matching polygons.
+        - Otherwise, calculates based on the area of the smallest polygons.
+
+    Raises:
+    ------
+    ValueError:
+        If `polygon_data` is improperly structured or contains invalid entries.
+    """
+
     # checking if polygon_data is of the correct type
     if not isinstance(polygon_data, list):
         raise ValueError("merged_polygons must be a list")
@@ -41,10 +74,10 @@ def calculate_defect_count(polygon_data, defect_type : DefectType) :
     # Step 3: Calculate how many polygons represent the smallest 25%
     smallest_25_percent_count = max(1, int(polygon_count * 0.25))  # At least 1 polygon
     
-    # Step 4: Select the smallest 10% of polygons
+    # Step 4: Select the smallest 25% of polygons
     smallest_polygons = polygon_areas[:smallest_25_percent_count]
 
-    # Step 5: Sum the area of the smallest 10% of polygons
+    # Step 5: Sum the area of the smallest 25% of polygons
     total_area_of_smallest = sum(smallest_polygons)
 
     # Step 6: Calculate the average area of the smallest polygons

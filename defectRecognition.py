@@ -5,6 +5,11 @@ import os
 import csv
 from enumDefectTypes import DefectType
 
+######
+# Old Version, not used anymore
+######
+
+
 
 # shows all areas that were marked as defects as squares on RGB Probe-Image
 def visual_representation(image, defect_positions_chipping, defect_positions_whiskers, defect_positions_scratches):

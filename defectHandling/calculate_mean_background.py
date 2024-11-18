@@ -19,6 +19,9 @@ def list_to_mean_noise(image, no_defect_list, patch_size):
         mean_array.append(mean)
     return np.mean(mean_array)
 
+####
+# from here on the code is not used at the moment
+
 def images_to_mean_noise(folderpath, number_of_patches):
     mean_array = []
     image_paths = find_bmp_files(folderpath, number_of_patches)

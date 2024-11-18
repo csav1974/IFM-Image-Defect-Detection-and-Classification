@@ -8,11 +8,11 @@ from enumDefectTypes import DefectType
 from defectHandling.calculateDefectArea import calculate_defect_area_fromList
 from defectHandling.calculateDefectCount import calculate_defect_count
 from defectHandling.saveDefectDataToCSV import save_results_to_CSV
-import pixelToRealWordl
+import pixelToRealWorld
 from shapely.geometry import Polygon, Point
 
 def main():
-    work_folder_path = 'predictionDataCSV/20240829_A1-3'
+    work_folder_path = 'predictionDataCSV/20240829_A1-2'
     sample_name = os.path.split(work_folder_path)[-1]
     csv_path = os.path.join(work_folder_path, f"{sample_name}_prediction.csv")
     image_path = os.path.join(work_folder_path, f"{sample_name}.bmp")
@@ -152,7 +152,7 @@ def main():
         pixel_to_mm_factor = float(diameter_in_pixel / diameter_sample)
         defect_data_mm = []
         for data in defect_data[:5]:
-            defect_data_mm.append(pixelToRealWordl.pixel_to_square_mm(data, pixel_to_mm_factor * pixel_to_mm_factor))
+            defect_data_mm.append(pixelToRealWorld.pixel_to_square_mm(data, pixel_to_mm_factor * pixel_to_mm_factor))
         defect_data_mm.append(defect_data[-1])
 
         whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio = defect_data_mm
@@ -231,9 +231,9 @@ def main():
         ##### testing part ######
 
 
-        # from defectHandling.saveDefects.saveDefectPolygons import save_polygons_to_bmp
-        # save_polygons_to_bmp(image=original_image, merged_polygons=merged_polygons)
-        # print("saved all polygons")
+        from defectHandling.saveDefects.saveDefectPolygons import save_polygons_to_bmp
+        save_polygons_to_bmp(image=original_image, merged_polygons=merged_polygons)
+        print("saved all polygons")
 
         
         ##########################
