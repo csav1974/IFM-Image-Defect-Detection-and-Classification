@@ -13,6 +13,8 @@ from shapely.geometry import Polygon, Point
 
 def main():
     work_folder_path = 'predictionDataCSV/20240829_A1-2'
+    safeImagesBoolean = False # only for testing right now
+
     sample_name = os.path.split(work_folder_path)[-1]
     csv_path = os.path.join(work_folder_path, f"{sample_name}_prediction.csv")
     image_path = os.path.join(work_folder_path, f"{sample_name}.bmp")
@@ -230,12 +232,11 @@ def main():
 
         ##### testing part ######
 
+        if(safeImagesBoolean):
+            from defectHandling.saveDefects.saveDefectPolygons import save_polygons_to_bmp
+            save_polygons_to_bmp(image=original_image, merged_polygons=merged_polygons)
+            print("saved all polygons")
 
-        from defectHandling.saveDefects.saveDefectPolygons import save_polygons_to_bmp
-        save_polygons_to_bmp(image=original_image, merged_polygons=merged_polygons)
-        print("saved all polygons")
-
-        
         ##########################
 
     def merge_overlapping_polygons(polygons):
