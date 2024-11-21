@@ -16,14 +16,14 @@ def saveDefectsFromList(image, image_name, data_list, patch_size, defect_type : 
         roi = image[y : y + patch_size, x : x + patch_size]
         rois.append(roi)
 
-    final_path = os.path.join(base_path, image_name)
+    final_path = os.path.join(base_path, image_name, defect_type.value)
     # Creates the subfolder if it doesn’t already exist
     if not os.path.exists(final_path):
         os.makedirs(final_path)
     # Save each ROI as a BMP file
     for idx, roi in enumerate(rois):
         filename = os.path.join(
-            final_path, defect_type.value, f"{image_name}_{defect_type.value}_{idx + 1}.bmp"
+            final_path, f"{image_name}_{defect_type.value}_{idx + 1}.bmp"
         )
         cv2.imwrite(filename, roi)
         print(f"files safed to {filename}")
