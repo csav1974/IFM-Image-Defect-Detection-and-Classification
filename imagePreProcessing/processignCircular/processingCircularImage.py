@@ -32,9 +32,9 @@ def bmpToProbeOnly_circle(filename, scale_factor=0.03):
     scaled_image = cv2.resize(image, (scaled_width, scaled_height), interpolation=cv2.INTER_AREA)
 
     # Initial center and radius on the scaled image
-    center_x = scaled_width // 2
+    center_x = (scaled_width // 2) - 1
     center_y = scaled_height // 2
-    radius = min(center_x, center_y) - 10  # Initial radius
+    radius = min(center_x, center_y) - 11  # Initial radius
 
     # Create a window named 'Preview'
     cv2.namedWindow('Preview')
