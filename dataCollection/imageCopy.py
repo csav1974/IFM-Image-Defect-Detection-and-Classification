@@ -2,6 +2,9 @@ import os
 import shutil
 
 def copy_files_with_rename(source_dir, target_dir):
+    project_root = os.getcwd()
+    source_dir = os.path.join(project_root, source_dir)
+    target_dir = os.path.join(project_root, target_dir)
     # Create the target directory if it does not exist
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
@@ -52,6 +55,7 @@ def copy_folder(source_directory_parent,target_directory_parent):
 
 def main():
     print("imageCopy Main running...")
+    copy_folder("dataCollection/Data/detectedErrors/machinefoundErrors/20240926_A3-1", "dataCollection/Data/Perfect_Data/20240926_A3-1")
 
 if __name__ == "__main__":
     main()
