@@ -12,7 +12,7 @@ import pixelToRealWorld
 from shapely.geometry import Polygon, Point
 
 def main():
-    work_folder_path = 'predictionDataCSV/20240829_A1-2'
+    work_folder_path = 'predictionDataCSV/20240926_A2-1'
     safeImagesBoolean = False # only for testing right now
 
     sample_name = os.path.split(work_folder_path)[-1]

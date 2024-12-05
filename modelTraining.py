@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils.class_weight import compute_class_weight
 
 # The path is fixed because it is only used for training the data and will not be present in the final program
-DATADIR = "dataCollection/Data/detectedErrors/machinefoundErrors/20241024_A3-1"
+DATADIR = "dataCollection/Data/TrainingData_2024_11_27"
 
 CATEGORIES = [
     "Whiskers",
@@ -62,12 +62,12 @@ y_train = y_train.astype(np.int32)
 y_val = y_val.astype(np.int32)
 
 # Compute class weights
-class_weights = compute_class_weight(
-    class_weight='balanced',
-    classes=np.unique(y_train),
-    y=y_train
-)
-class_weight_dict = dict(zip(np.unique(y_train), class_weights))
+# class_weights = compute_class_weight(
+#     class_weight='balanced',
+#     classes=np.unique(y_train),
+#     y=y_train
+# )
+# class_weight_dict = dict(zip(np.unique(y_train), class_weights))
 
 # Data augmentation for training data using tf.data and augmentation layers
 AUTOTUNE = tf.data.AUTOTUNE
@@ -90,7 +90,6 @@ validation_dataset = validation_dataset.batch(batch_size).prefetch(AUTOTUNE)
 
 # Create a Sequential model
 model = keras.models.Sequential()
-
 # First convolutional layer
 model.add(keras.layers.Input(shape=(IMG_SIZE, IMG_SIZE, 1)))
 model.add(keras.layers.Conv2D(256, (3, 3)))
@@ -117,7 +116,7 @@ model.add(keras.layers.Activation("softmax"))
 model.compile(loss="sparse_categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
 # Early stopping to prevent overfitting
-early_stopping = keras.callbacks.EarlyStopping(monitor="val_loss", patience=5)
+early_stopping = keras.callbacks.EarlyStopping(monitor="val_loss", patience=3)
 
 # Train the model using the datasets
 model.fit(
@@ -125,11 +124,11 @@ model.fit(
     epochs=12,
     validation_data=validation_dataset,
     callbacks=[early_stopping],
-    class_weight=class_weight_dict,
+    # class_weight=class_weight_dict,
 )
 
 # Save the model
-model_name = "Model_v8"
+model_name = "Model_20241127"
 path_to_model = os.path.join("kerasModels", model_name)
 model.save(f"{path_to_model}.keras")
 

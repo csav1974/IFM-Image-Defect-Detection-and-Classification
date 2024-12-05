@@ -39,6 +39,23 @@ def copy_files_with_rename(source_dir, target_dir):
         )
 
 
+def get_direct_subfolders(folder_path):
+    # Prüfe, ob der übergebene Pfad ein gültiger Ordner ist
+    if not os.path.isdir(folder_path):
+        raise ValueError(f"{folder_path} ist kein gültiger Ordnerpfad!")
+    
+    # Liste für die Ergebnisse
+    subfolder_paths = []
+    
+    # Iteriere durch die Inhalte des Ordners
+    for entry in os.listdir(folder_path):
+        entry_path = os.path.join(folder_path, entry)
+        # Füge nur Ordner (keine Dateien) zur Liste hinzu
+        if os.path.isdir(entry_path):
+            subfolder_paths.append(entry_path)
+    
+    return subfolder_paths
+
 # Beispielaufruf des Programms
 # source_directory_parent = "dataCollection/Data/detectedErrors/machinefoundErrors/20240829_A1-1"  # Pfad zum Quellordner
 # target_directory_parent = (
@@ -55,7 +72,13 @@ def copy_folder(source_directory_parent,target_directory_parent):
 
 def main():
     print("imageCopy Main running...")
-    copy_folder("dataCollection/Data/detectedErrors/machinefoundErrors/20240926_A3-1", "dataCollection/Data/Perfect_Data/20240926_A3-1")
+    source_folder = "dataCollection/Data/Perfect_Data"
+    target_folder = "dataCollection/Data/TrainingData_2024_11_27"
+    subfolders = get_direct_subfolders(source_folder)
+    for subfolder in subfolders:
+        print(subfolder)
+        print (target_folder)
+        copy_folder(subfolder, target_folder)
 
 if __name__ == "__main__":
     main()

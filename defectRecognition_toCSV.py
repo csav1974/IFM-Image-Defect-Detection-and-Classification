@@ -182,9 +182,8 @@ def defect_recognition_parallel_computing(image_path=None, model_name=None):
 
 
 def main():
-    defect_recognition_parallel_computing(image_path="predictionDataCSV/20241024_A4-1/20241024_A4-1.bmp", model_name="Model_20240829_v4")
-    # defect_recognition_parallel_computing(image_path="predictionDataCSV/20241024_A3-1/20241024_A3-1.bmp", model_name="Model_20240829_v4")
-    # defect_recognition_parallel_computing(image_path="predictionDataCSV/20241024_A4-1/20241024_A4-1.bmp", model_name="Model_20240829_v4")
+    defect_recognition_parallel_computing(image_path="predictionDataCSV/20240926_A1-1/20240926_A1-1.bmp", model_name="Model_20241127")
+    defect_recognition_parallel_computing(image_path="predictionDataCSV/20240926_A2-1/20240926_A2-1.bmp", model_name="Model_20241127")
     
 if __name__ == "__main__":
     main()
