@@ -45,8 +45,13 @@ def bmpToProbeOnly_rectangle(filename, scale_factor=0.1):
     window_width = int(screen_width * 0.75)
     # Maintain aspect ratio for height and add extra space for controls
     aspect_ratio = scaled_height / scaled_width
-    control_height = 400  # Estimated height needed for controls
-    window_height = int(window_width * aspect_ratio) + control_height
+    control_height = 600  # Estimated height needed for controls
+    if int(window_width * aspect_ratio) + control_height < screen_height:
+        window_height = int(window_width * aspect_ratio) + control_height
+    else: 
+        window_width = int((screen_height - control_height) / aspect_ratio)
+        window_height = screen_height
+
 
     # Set the window size
     root.geometry(f"{window_width}x{window_height}")
@@ -54,11 +59,14 @@ def bmpToProbeOnly_rectangle(filename, scale_factor=0.1):
     root.resizable(False, False)
 
     # Create frames for image display and controls
-    image_frame = tk.Frame(root)
-    image_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+    content_frame = tk.Frame(root)
+    content_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-    controls_frame = tk.Frame(root)
-    controls_frame.pack(side=tk.BOTTOM, fill=tk.X)
+    image_frame = tk.Frame(content_frame)
+    image_frame.pack(side=tk.TOP, fill=tk.BOTH)
+
+    controls_frame = tk.Frame(content_frame)
+    controls_frame.pack(side=tk.TOP, fill=tk.X)
 
     # Variables for sliders
     center_x_var = tk.IntVar(value=scaled_width // 2)
