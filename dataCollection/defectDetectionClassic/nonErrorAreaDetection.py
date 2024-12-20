@@ -3,9 +3,9 @@ import dataCollection.defectDetectionClassic.filemanagement as filemanagement
 import tkinter as tk
 from PIL import Image, ImageTk
 
-# global Variable to stop programm
+# global Variable to stop program
 stop_processing = False
-
+selected_label = None
 
 def show_image(patch):
     global stop_processing, selected_label
@@ -27,11 +27,9 @@ def show_image(patch):
     patch_rgb = cv2.cvtColor(patch, cv2.COLOR_BGR2RGB)
     patch_pil = Image.fromarray(patch_rgb)
 
-    # Resize the image by 500% (5x)
+    # Resize the image by 500%
     new_size = (patch_pil.width * 5, patch_pil.height * 5)
-    patch_pil_resized = patch_pil.resize(
-        new_size, Image.NEAREST
-    )  # Using NEAREST to keep pixelation
+    patch_pil_resized = patch_pil.resize(new_size, Image.NEAREST)
 
     # Convert resized image to Tkinter format
     patch_tk = ImageTk.PhotoImage(patch_pil_resized)
@@ -41,16 +39,17 @@ def show_image(patch):
     label.image = patch_tk  # Keep a reference to avoid garbage collection
     label.pack()
 
-    # Buttons for selection
-    button_true = tk.Button(root, text="True", command=lambda: close_window(True))
-    button_true.pack(side=tk.LEFT)
+    # Hinweis-Label
+    info_label = tk.Label(root, text="Drücke 'T' für True, 'F' für False, 'Q' zum Beenden")
+    info_label.pack()
 
-    button_false = tk.Button(root, text="False", command=lambda: close_window(False))
-    button_false.pack(side=tk.RIGHT)
-
-    # Quit Button
-    button_quit = tk.Button(root, text="Quit", command=quit_processing)
-    button_quit.pack(side=tk.BOTTOM)
+    # Tastatureingaben binden
+    root.bind('t', lambda event: close_window(True))
+    root.bind('T', lambda event: close_window(True))
+    root.bind('f', lambda event: close_window(False))
+    root.bind('F', lambda event: close_window(False))
+    root.bind('q', lambda event: quit_processing)
+    root.bind('Q', lambda event: quit_processing)
 
     # Update the geometry to get the actual window size after packing
     root.update_idletasks()
@@ -73,23 +72,12 @@ def show_image(patch):
 
 
 def nonErrorArea(filepath, folderpath):
-    global stop_processing
+    global stop_processing, selected_label
 
     image = cv2.imread(filepath)
 
     patch_size = 200
-    stride = 200
-
-    height, width, _ = image.shape
-
-    # Define the size of the square
-    square_size = 3000
-
-    # Calculate the top-left corner of the square
-    start_x = (width - square_size) // 2
-    start_y = (height - square_size) // 2
-    # Crop the square around the center
-    image = image[start_y : start_y + square_size, start_x : start_x + square_size]
+    stride = 100
 
     height, width, _ = image.shape
 
@@ -124,6 +112,6 @@ def nonErrorArea(filepath, folderpath):
 
 # run the function
 nonErrorArea(
-    "sampleOnlyBMP/20240610_A6-2m_10x$3D_Square.bmp",
-    "detectedErrors/20240610_A6-2m_10x$3D_Square",
+    "sampleOnlyBMP/20241104_A2-1_3.bmp",
+    "dataCollection/Data/detectedErrors/manualWhiskers20241104_A2-1/Whiskers",
 )
