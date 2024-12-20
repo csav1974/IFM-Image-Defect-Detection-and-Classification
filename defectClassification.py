@@ -12,7 +12,7 @@ import pixelToRealWorld
 from shapely.geometry import Polygon, Point
 
 def main():
-    work_folder_path = 'predictionDataCSV/20240926_A2-1'
+    work_folder_path = 'predictionDataCSV/20240829_A1-2'
     safeImagesBoolean = False # only for testing right now
 
     sample_name = os.path.split(work_folder_path)[-1]
@@ -149,9 +149,10 @@ def main():
         defect_data = calculate_defect_area_fromList(image, data_list_with_defectType, patch_size)
     
         # Convert defect data to mm
-        diameter_sample = 30 
-        diameter_in_pixel = original_image.shape[0]
-        pixel_to_mm_factor = float(diameter_in_pixel / diameter_sample)
+        # diameter_sample = 30 
+        # diameter_in_pixel = original_image.shape[0]
+        # pixel_to_mm_factor = float(diameter_in_pixel / diameter_sample)
+        pixel_to_mm_factor = 529
         defect_data_mm = []
         for data in defect_data[:5]:
             defect_data_mm.append(pixelToRealWorld.pixel_to_square_mm(data, pixel_to_mm_factor * pixel_to_mm_factor))
