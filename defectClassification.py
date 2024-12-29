@@ -12,12 +12,13 @@ import pixelToRealWorld
 from shapely.geometry import Polygon, Point
 
 def main():
-    work_folder_path = 'predictionDataCSV/20240829_A1-2'
+    work_folder_path = 'predictionDataCSV/HZB_CIGS_4-4325-15-1-X$3D'
     safeImagesBoolean = False # only for testing right now
 
     sample_name = os.path.split(work_folder_path)[-1]
     csv_path = os.path.join(work_folder_path, f"{sample_name}_prediction.csv")
     image_path = os.path.join(work_folder_path, f"{sample_name}.bmp")
+    xml_path =os.path.join(work_folder_path, "info.xml")
     # csv_path = 'predictionDataCSV/20240829_A1-1/20240829_A1-1_prediction.csv'
     # image_path = "predictionDataCSV/20240829_A1-1/20240829_A1-1.bmp"
     image_name, patch_size, stride, _, data_list = read_from_csv(csv_path)
@@ -152,7 +153,11 @@ def main():
         # diameter_sample = 30 
         # diameter_in_pixel = original_image.shape[0]
         # pixel_to_mm_factor = float(diameter_in_pixel / diameter_sample)
-        pixel_to_mm_factor = 529
+        if os.path.exists(xml_path):
+            pixel_to_mm_factor = pixelToRealWorld.calculate_pixels_per_mm(xml_path)
+        else:
+            pixel_to_mm_factor = 529
+
         defect_data_mm = []
         for data in defect_data[:5]:
             defect_data_mm.append(pixelToRealWorld.pixel_to_square_mm(data, pixel_to_mm_factor * pixel_to_mm_factor))
