@@ -10,8 +10,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils.class_weight import compute_class_weight
 
 # Pfad zum Datensatz
-DATADIR = "dataCollection/Data/training20241218_secondStep"
-model_name = "Model_20241220_secondStep.keras"
+DATADIR = "dataCollection/Data/Perfect_Data"
+model_name = "Model_20241229_secondStep.keras"
 path_to_model = os.path.join("kerasModels", model_name)
 
 
@@ -24,20 +24,36 @@ CATEGORIES = [
 IMG_SIZE = 128
 batch_size = 16
 
+
+def list_subfolders(folder_path):
+    subfolders = []
+    
+    for entry in os.listdir(folder_path):
+        full_path = os.path.join(folder_path, entry)
+
+        if os.path.isdir(full_path):
+            subfolders.append(full_path)
+    
+    return subfolders
+
 def create_training_data():
+
+    folderpaths = list_subfolders(DATADIR)
     training_data = []
-    for category in CATEGORIES:
-        path = os.path.join(DATADIR, category)
-        class_num = CATEGORIES.index(category)
-        for img in tqdm(os.listdir(path)):
-            try:
-                # Bild laden in Farbe (BGR)
-                img_array = cv2.imread(os.path.join(path, img), cv2.IMREAD_GRAYSCALE)
-                # Resize
-                new_array = cv2.resize(img_array, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_LINEAR)
-                training_data.append([new_array, class_num])
-            except Exception as e:
-                pass
+    for folderpath in folderpaths:
+        for category in CATEGORIES:
+            path = os.path.join(folderpath, category)
+            if not os.path.isdir(path):
+                continue
+            class_num = CATEGORIES.index(category)
+            for img in tqdm(os.listdir(path)):
+                try:
+                    img_array = cv2.imread(os.path.join(path, img), cv2.IMREAD_GRAYSCALE)
+                    # Resize
+                    new_array = cv2.resize(img_array, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_LINEAR)
+                    training_data.append([new_array, class_num])
+                except Exception as e:
+                    pass
     return training_data
 
 training_data = create_training_data()
@@ -139,5 +155,4 @@ model.fit(
     class_weight=class_weight_dict
 )
 
-model.save(f"{path_to_model}.keras")
 model.summary()
