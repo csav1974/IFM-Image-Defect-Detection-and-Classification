@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 import os
+import time
 from csvHandling.writePredictionCSV import write_defect_data
 
 
@@ -15,7 +16,7 @@ def defect_recognition_old(image_path=None, model_name=None):
     image = cv2.imread(image_path)
     work_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    patch_size = 256
+    patch_size = 128
     stride = patch_size // 2
     height, width = work_image.shape
 
@@ -111,35 +112,94 @@ def defect_recognition(image_path=None, model_name_1=None, model_name_2=None):
     None
         The function writes the defect data to a CSV file using the `write_defect_data` function.
     """
+
+    # Start measuring time for the entire script
+    start_time_script = time.time()
+
+    # Setting parameters
+    IMG_SIZE = 128
+    patch_size = 128
+    stride = patch_size // 2
+
+    ###############################################################################
+    # 1) Load the first model
+    ###############################################################################
     
+    start_time = time.time()  # Capture start time for this block
+
     # Load the first model
     path_to_model_1 = os.path.join("kerasModels", model_name_1)
     model_1 = tf.keras.models.load_model(f"{path_to_model_1}.keras")
     
+    end_time = time.time()  # Capture end time for this block
+    print(f"Time for loading model 1: {end_time - start_time:.4f} seconds")
+
+    ###############################################################################
+    # 2) Load the second model
+    ###############################################################################
+    
+    start_time = time.time()
+    
     # Load the second model
     path_to_model_2 = os.path.join("kerasModels", model_name_2)
     model_2 = tf.keras.models.load_model(f"{path_to_model_2}.keras")
+    
+    end_time = time.time()
+    print(f"Time for loading model 2: {end_time - start_time:.4f} seconds")
 
-    IMG_SIZE = 128
 
-    # Read and preprocess the image
+
+    ###############################################################################
+    # 3) Read and preprocess the image
+    ###############################################################################
+    
+    start_time = time.time()
+    
+    # Read the image from disk
     image = cv2.imread(image_path)
+    # Convert image to grayscale
     work_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    end_time = time.time()
+    print(f"Time for reading and preprocessing image: {end_time - start_time:.4f} seconds")
 
-    patch_size = 128
-    stride = patch_size // 2
     height, width = work_image.shape
 
-    # Convert the image to a Tensor
+    ###############################################################################
+    # 4) Convert the image to a Tensor
+    ###############################################################################
+    
+    start_time = time.time()
+    
+    # Convert the grayscale image to a float Tensor
     work_tensor = tf.convert_to_tensor(work_image, dtype=tf.float32)
+    # Add batch and channel dimensions
     work_tensor = tf.expand_dims(work_tensor, axis=0)
+    
     work_tensor = tf.expand_dims(work_tensor, axis=-1)
+    end_time = time.time()
+    print(f"Time for converting to Tensor: {end_time - start_time:.4f} seconds")
 
-    # Calculate the number of patches
+    ###############################################################################
+    # 5) Calculate the number of patches
+    ###############################################################################
+
+    start_time = time.time()
+    
+    # Calculate how many patches along each axis
     num_patches_y = ((height - patch_size) // stride) + 1
     num_patches_x = ((width - patch_size) // stride) + 1
+    
+    end_time = time.time()
+    print(f"Time for calculating number of patches: {end_time - start_time:.4f} seconds")
 
-    # Extract patches
+    ###############################################################################
+    # 6) Extract patches
+    ###############################################################################
+
+    start_time = time.time()
+
+    # Extract patches from the Tensor
     patches_tf = tf.image.extract_patches(
         images=work_tensor,
         sizes=[1, patch_size, patch_size, 1],
@@ -148,40 +208,91 @@ def defect_recognition(image_path=None, model_name_1=None, model_name_2=None):
         padding='VALID'
     )
 
-    # Reshape to [num_patches, patch_size, patch_size, 1]
-    patches_tf = tf.reshape(patches_tf, [num_patches_y, num_patches_x, patch_size, patch_size])
-    patches_tf = tf.expand_dims(patches_tf, axis=-1) 
-    patches_tf = patches_tf / 255.0
+    end_time = time.time()
+    print(f"Time for extracting patches: {end_time - start_time:.4f} seconds")
 
-    # Create (x, y) coordinates
+    ###############################################################################
+    # 7) Reshape and normalize patches
+    ###############################################################################
+
+    start_time = time.time()
+
+    # Reshape to [num_patches_y, num_patches_x, patch_size, patch_size, 1]
+    patches_tf = tf.reshape(patches_tf, [num_patches_y, num_patches_x, patch_size, patch_size, 1]) / 255.0
+
+    end_time = time.time()
+    print(f"Time for reshaping/normalizing patches: {end_time - start_time:.4f} seconds")
+
+    ###############################################################################
+    # 8) Create (x, y) coordinates
+    ###############################################################################
+    start_time = time.time()
+    # Create (x, y) coordinates for each patch
     y_indices = tf.range(num_patches_y) * stride
     x_indices = tf.range(num_patches_x) * stride
     Y, X = tf.meshgrid(y_indices, x_indices, indexing='ij')
     Y = tf.reshape(Y, [-1])
     X = tf.reshape(X, [-1])
+    end_time = time.time()
+    print(f"Time for creating (x, y) coordinates: {end_time - start_time:.4f} seconds")
 
-    # Flatten the patches
+    ###############################################################################
+    # 9) Flatten patches and resize to IMG_SIZE
+    ###############################################################################
+
+    start_time = time.time()
+
+    # Flatten to [total_patches, patch_size, patch_size, 1]
     patches_tf = tf.reshape(patches_tf, [num_patches_y * num_patches_x, patch_size, patch_size, 1])
-
-    # Resize patches to IMG_SIZE x IMG_SIZE
+    
+    # Resize patches to [IMG_SIZE, IMG_SIZE]
     patches_tf = tf.image.resize(patches_tf, [IMG_SIZE, IMG_SIZE], method='gaussian')
 
-    # Convert Tensors to NumPy arrays
+    end_time = time.time()
+    print(f"Time for flattening/resizing patches: {end_time - start_time:.4f} seconds")
+
+    ###############################################################################
+    # 10) Convert Tensors to NumPy arrays
+    ###############################################################################
+
+    start_time = time.time()
+
+    # Convert Tensors for patches and coordinates to NumPy
     patches_np = patches_tf.numpy()
     X_np = X.numpy()
     Y_np = Y.numpy()
+    end_time = time.time()
+    print(f"Time for converting to NumPy: {end_time - start_time:.4f} seconds")
 
-    # Filter out patches that are entirely 0
+    ###############################################################################
+    # 11) Filter out patches that are entirely zero
+    ###############################################################################
+    start_time = time.time()
+    # Only keep patches that are non-zero
     mask = np.all(patches_np != 0.0, axis=(1, 2, 3))
     patches_np = patches_np[mask]
     X_np = X_np[mask]
     Y_np = Y_np[mask]
 
+    end_time = time.time()
+    print(f"Time for filtering zero patches: {end_time - start_time:.4f} seconds")
+
+    ###############################################################################
+    # 12) Calculate batch size and steps
+    ###############################################################################
+    start_time = time.time()
     num_filtered_patches = patches_np.shape[0]
     batch_size = 32
     steps = int(np.ceil(num_filtered_patches / batch_size))
+    end_time = time.time()
+    print(f"Time for preparing batch size: {end_time - start_time:.4f} seconds")
 
-    # Create a dataset for model_1
+    ###############################################################################
+    # 13) Create a dataset for model_1
+    ###############################################################################
+
+    start_time = time.time()
+
     ds = tf.data.Dataset.from_tensor_slices(patches_np)
     ds = ds.batch(batch_size).prefetch(tf.data.AUTOTUNE)
 
@@ -197,7 +308,15 @@ def defect_recognition(image_path=None, model_name_1=None, model_name_2=None):
     error_X = X_np[error_mask]
     error_Y = Y_np[error_mask]
 
-    # Apply model_2 only to the Error patches
+    end_time = time.time()
+    print(f"Time for creating dataset for binary model: {end_time - start_time:.4f} seconds")
+
+    ###############################################################################
+    # 14) Apply model_2 only to the Error patches
+    ###############################################################################
+
+    start_time = time.time()
+
     if len(error_patches) > 0:
         steps_2 = int(np.ceil(error_patches.shape[0] / batch_size))
         ds_2 = tf.data.Dataset.from_tensor_slices(error_patches)
@@ -207,7 +326,15 @@ def defect_recognition(image_path=None, model_name_1=None, model_name_2=None):
     else:
         predictions_2 = np.empty((0, 3))
 
-    # Construct final results
+    end_time = time.time()
+    print(f"Time for creating dataset for defect classification model: {end_time - start_time:.4f} seconds")
+
+    ###############################################################################
+    # 15) Construct final results
+    ###############################################################################
+
+    start_time = time.time()
+    
     final_results = []
     error_idx = 0
     for i in range(num_filtered_patches):
@@ -239,14 +366,29 @@ def defect_recognition(image_path=None, model_name_1=None, model_name_2=None):
              no_error_val]
         ])
 
-    # Write results to a CSV file
+    end_time = time.time()
+    print(f"Time for constructing results: {end_time - start_time:.4f} seconds")
+
+    ###############################################################################
+    # 16) Write results to a CSV file
+    ###############################################################################
+
+    start_time = time.time()
+
     write_defect_data(filename=image_path, patch_size=patch_size, stride=stride, data_list=final_results)
+
+    end_time = time.time()
+    print(f"Time for writing data to CSV: {end_time - start_time:.4f} seconds")
+
+    # Measure total runtime
+    end_time_script = time.time()
+    print(f"Total script runtime: {end_time_script - start_time_script:.4f} seconds")
 
 def main():
     defect_recognition(
-        image_path="predictionDataCSV/20241104_A2-1/20241104_A2-1.bmp", 
-        model_name_1="Model_20241220_firstStep",     # Binary model (No_Error / Error)
-        model_name_2="Model_20241220_secondStep"     # Three-class model (Whiskers, Chipping, Scratches)
+        image_path="predictionDataCSV/Flexpecs_Cigs_T26/Flexpecs_Cigs_T26.bmp", 
+        model_name_1="Model_20241229_firstStep",     # Binary model (No_Error / Error)
+        model_name_2="Model_20241229_secondStep"     # Three-class model (Whiskers, Chipping, Scratches)
     )
 
 if __name__ == "__main__":
