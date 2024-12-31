@@ -9,7 +9,7 @@ from defectHandling.calculate_mean_background import list_to_mean_noise as mean_
 
 def calculate_defect_area_fromList(image, data_list, patch_size = 32,):
 
-    save_image = True
+    save_image = False
 
     defect_maps = []
     mean_background_value = mean_noise(image, data_list[-1][0][:1000], patch_size) # data_list[-1][0] is a array with all no_defect positions
