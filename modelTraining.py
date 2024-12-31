@@ -19,7 +19,7 @@ CATEGORIES = [
     "No_Error",
 ] 
 
-IMG_SIZE = 64
+IMG_SIZE = 128
 batch_size = 32
 
 def create_training_data():
@@ -30,7 +30,7 @@ def create_training_data():
         for img in tqdm(os.listdir(path)):
             try:
                 # Bild laden in Farbe (BGR)
-                img_array = cv2.imread(os.path.join(path, img), cv2.IMREAD_COLOR)
+                img_array = cv2.imread(os.path.join(path, img), cv2.IMREAD_GRAYSCALE)
                 # RGB Konvertierung
                 img_array = cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB)
                 # Resize
@@ -93,7 +93,7 @@ validation_dataset = validation_dataset.batch(batch_size).prefetch(AUTOTUNE)
 # Modellarchitektur (tiefer, dafür weniger Filter pro Layer, mit BatchNorm und Dropout)
 model = keras.models.Sequential()
 
-model.add(keras.layers.Input(shape=(IMG_SIZE, IMG_SIZE, 3)))
+model.add(keras.layers.Input(shape=(IMG_SIZE, IMG_SIZE, 1)))
 model.add(keras.layers.Conv2D(32, (3,3), activation='relu', padding='same'))
 model.add(keras.layers.BatchNormalization())
 model.add(keras.layers.MaxPooling2D((2,2)))
