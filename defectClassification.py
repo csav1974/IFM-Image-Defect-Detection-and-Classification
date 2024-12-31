@@ -150,9 +150,8 @@ def main():
         defect_data = calculate_defect_area_fromList(image, data_list_with_defectType, patch_size)
     
         # Convert defect data to mm
-        # diameter_sample = 30 
-        # diameter_in_pixel = original_image.shape[0]
-        # pixel_to_mm_factor = float(diameter_in_pixel / diameter_sample)
+
+        # check if xm file for image is present. If not take default resolution of our IFM
         if os.path.exists(xml_path):
             pixel_to_mm_factor = pixelToRealWorld.calculate_pixels_per_mm(xml_path)
         else:
