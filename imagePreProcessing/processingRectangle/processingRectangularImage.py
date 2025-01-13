@@ -71,9 +71,9 @@ def bmpToProbeOnly_rectangle(filename, scale_factor=0.1):
     # Variables for sliders
     center_x_var = tk.IntVar(value=scaled_width // 2)
     center_y_var = tk.IntVar(value=scaled_height // 2)
-    width_var = tk.IntVar(value=scaled_width // 2)
-    height_var = tk.IntVar(value=scaled_height // 2)
-    rotation_var = tk.IntVar(value=1800)  # Rotation angle in tenths of degrees (initialized to 180 degrees)
+    width_var = tk.IntVar(value=scaled_width * 0.9)
+    height_var = tk.IntVar(value=scaled_height * 0.9)
+    rotation_var = tk.IntVar(value=0)  # Rotation angle in tenths of degrees (initialized to 0 degrees)
 
     # Function to update the preview image
     def update_preview(*args):
