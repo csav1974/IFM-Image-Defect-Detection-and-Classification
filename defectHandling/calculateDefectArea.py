@@ -60,7 +60,7 @@ def list_to_defect_map(image, patch_size, data_list, defect_type, background_val
     if (defect_type == DefectType.CHIPPING 
         or defect_type == DefectType.SCRATCHES) :
         defect_map = calculate_defect_map_chipping(
-            data_list, image, threshold=0.60, patch_size=patch_size
+            data_list, image, threshold=0.55, patch_size=patch_size
         )       
     if defect_type == DefectType.WHISKERS:
         defect_map = calculate_defect_map_whiskers(
@@ -73,13 +73,12 @@ def save_image_with_defects(maps, image):
 
     for map in maps:
         mask = map[0] == 0
-        mask = np.transpose(mask)
         if (map[1] == DefectType.CHIPPING):
             image[mask] = (0, 0, 255)
         if (map[1] == DefectType.WHISKERS):
-            image[mask] = 0
+            image[mask] = (255, 0, 0)
         if (map[1] == DefectType.SCRATCHES):
-            image[mask] = (0, 255, 0)
+            image[mask] = (0, 255, 255)
 
 
     # # scales Picture for output

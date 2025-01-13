@@ -40,9 +40,9 @@ def calculate_defect_map_chipping(coordinates, image, threshold=0.8, patch_size 
 
         # Create a boolean mask for pixels in the patch that exceed the threshold
         mask = patch > threshold
-        mask = np.transpose(mask)
+        # mask = np.transpose(mask)
         # Apply the mask directly to the defect_map
-        defect_map[x : x + patch_size, y : y + patch_size][mask] = 0
+        defect_map[y : y + patch_size, x : x + patch_size][mask] = 0
 
 
     # include_unfound_chipping(defect_map, image_gray)

@@ -15,7 +15,7 @@ def calculate_defect_map_whiskers(coordinates, image, threshold=0.05, patch_size
     defect_map = np.ones_like(image[..., 0])
 
     # Apply Gaussian blur to the image and normalize
-    ksize = (9, 9)  # Kernel size
+    ksize = (5, 5)  # Kernel size
     sigmaX = 1.0    # Standard deviation in X direction
     blurred_image = cv2.GaussianBlur(image, ksize, sigmaX) / 255.0
 
@@ -41,10 +41,10 @@ def calculate_defect_map_whiskers(coordinates, image, threshold=0.05, patch_size
                     patch_mask[i : i + 5, j : j + 5] = True
 
         # Transpose patch_mask to align axes correctly
-        patch_mask = np.transpose(patch_mask)
+        # patch_mask = np.transpose(patch_mask)
 
         # Update defect_map with detected defects in the patch
-        defect_map[x : x + patch_size, y : y + patch_size][patch_mask] = 0
+        defect_map[y : y + patch_size, x : x + patch_size][patch_mask] = 0
 
     # After processing, fill enclosed areas in defect_map with black pixels (zeros)
     # Invert defect_map: defects become 1, background becomes 0
