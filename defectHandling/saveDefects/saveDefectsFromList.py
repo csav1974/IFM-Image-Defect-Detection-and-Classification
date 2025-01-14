@@ -22,6 +22,8 @@ def saveDefectsFromList(image, image_name, data_list, patch_size, defect_type : 
         os.makedirs(final_path)
     # Save each ROI as a BMP file
     for idx, roi in enumerate(rois):
+        if (idx > 500):
+            break
         filename = os.path.join(
             final_path, f"{image_name}_{defect_type.value}_{idx + 1}.bmp"
         )
