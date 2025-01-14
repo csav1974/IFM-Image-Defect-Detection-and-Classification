@@ -12,7 +12,7 @@ import pixelToRealWorld
 from shapely.geometry import Polygon, Point
 
 def main():
-    work_folder_path = 'predictionDataCSV/HZB_CIGS_4-4325-15-1-X$3D'
+    work_folder_path = 'predictionDataCSV/FLEXPECS_CIGS_T28'
     safeImagesBoolean = False # only for testing right now
 
     sample_name = os.path.split(work_folder_path)[-1]
@@ -40,9 +40,9 @@ def main():
     cv2.createTrackbar('Threshold No Defect', window_name, 0, 1000, lambda x: None)
 
     # Set default values for the trackbars
-    cv2.setTrackbarPos('Threshold Whiskers', window_name, 900)
-    cv2.setTrackbarPos('Threshold Chipping', window_name, 900)
-    cv2.setTrackbarPos('Threshold Scratching', window_name, 900)
+    cv2.setTrackbarPos('Threshold Whiskers', window_name, 501)
+    cv2.setTrackbarPos('Threshold Chipping', window_name, 501)
+    cv2.setTrackbarPos('Threshold Scratching', window_name, 501)
     cv2.setTrackbarPos('Threshold No Defect', window_name, 1000)
 
     # List to store rectangles and associated data
@@ -54,8 +54,17 @@ def main():
     # Variable to store merged polygons
     merged_polygons = None  # Initially None
 
+    hasXML = False
+    if os.path.exists(xml_path):
+        hasXML = True
+        pixel_to_mm_factor = pixelToRealWorld.calculate_pixels_per_mm(xml_path)
+    else:
+        pixel_to_mm_factor = 529
+
     # Mouse callback function
     def mouse_callback(event, x, y, flags, param):
+        if hasXML:
+            pixel_to_mm_factor = pixelToRealWorld.calculate_pixels_per_mm(xml_path)
         nonlocal hover_info
         if event == cv2.EVENT_MOUSEMOVE:
             hover_info = None
@@ -73,6 +82,19 @@ def main():
             else:
                 for rect in rectangles:
                     x1, y1, x2, y2 = rect['coords']
+                    if hasXML:
+                        x1mm = x1 / pixel_to_mm_factor
+                        y1mm = y1 / pixel_to_mm_factor
+                    if x1 <= x <= x2 and y1 <= y <= y2 and hasXML:
+                        hover_info = {
+                            'x': x1,
+                            'y': y1,
+                            'x-mm': x1mm,
+                            'y-mm': y1mm,
+                            'predictions': rect['predictions'],
+                            'color': rect['color']
+                        }
+                        break
                     if x1 <= x <= x2 and y1 <= y <= y2:
                         hover_info = {
                             'x': x1,
@@ -81,6 +103,7 @@ def main():
                             'color': rect['color']
                         }
                         break
+                    
 
     # Set mouse callback
     cv2.setMouseCallback(window_name, mouse_callback)
@@ -152,10 +175,6 @@ def main():
         # Convert defect data to mm
 
         # check if xm file for image is present. If not take default resolution of our IFM
-        if os.path.exists(xml_path):
-            pixel_to_mm_factor = pixelToRealWorld.calculate_pixels_per_mm(xml_path)
-        else:
-            pixel_to_mm_factor = 529
 
         defect_data_mm = []
         for data in defect_data[:5]:
@@ -363,7 +382,10 @@ def main():
         if hover_info is not None:
             if 'predictions' in hover_info:
                 # Existing code for rectangles
-                x1, y1 = hover_info['x'], hover_info['y']
+                if (hasXML):
+                    x1, y1, xmm, ymm = hover_info['x'], hover_info['y'], hover_info['x-mm'], hover_info['y-mm']
+                else :
+                    x1, y1 = hover_info['x'], hover_info['y']
                 predictions = hover_info['predictions']
                 # Create a semi-transparent overlay
                 overlay = display_image.copy()
@@ -374,15 +396,35 @@ def main():
                 cv2.addWeighted(overlay, alpha, display_image, 1 - alpha, 0, display_image)
 
                 # Display predictions as text
-                text = f"x: {x1}, y: {y1}, a: {predictions[0]:.3f}, b: {predictions[1]:.3f}, c: {predictions[2]:.3f}, d: {predictions[3]:.3f}"
+                if (hasXML):
+                    text = [f"x: {x1}px, y: {y1}px, xmm: {xmm:.1f}mm, ymm: {ymm:.1f}mm",
+                            f"Whiskers: {predictions[0]:.3f}", 
+                            f"Chipping: {predictions[1]:.3f}", 
+                            f"Scratching: {predictions[2]:.3f}", 
+                            f"No Defect: {predictions[3]:.3f}"]
+                else:
+                    text = [f"x: {x1}px, y: {y1}px", 
+                            f"Whiskers: {predictions[0]:.3f}", 
+                            f"Chipping: {predictions[1]:.3f}", 
+                            f"Scratching: {predictions[2]:.3f}", 
+                            f"No Defect: {predictions[3]:.3f}"]
+                    
                 # Calculate position for the text
                 text_x = x1
                 text_y = y1 - 10 if y1 - 10 > 10 else y1 + patch_size + 20
                 # Draw background for the text
-                (text_width, text_height), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-                cv2.rectangle(display_image, (text_x, text_y - text_height - 5), (text_x + text_width, text_y + 5), (0, 0, 0), -1)
+                (text_width, text_height), _ = cv2.getTextSize(text[0], cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                cv2.rectangle(display_image, (text_x, text_y - (text_height) - 5), (text_x + text_width, text_y + (text_height * 5) + 5), (0, 0, 0), -1)
                 # Put text on the image
-                cv2.putText(display_image, text, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                # Render each line of text
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                font_scale = 0.5
+                color = (255, 255, 255)  # White text
+                thickness = 1
+                line_height = 15  # Adjust line height as needed
+                for line in text:
+                    cv2.putText(display_image, line, (text_x, text_y), font, font_scale, color, thickness)
+                    text_y += line_height 
             elif 'polygon' in hover_info:
                 # New code for polygons
                 polygon = hover_info['polygon']
