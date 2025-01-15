@@ -2,9 +2,8 @@ import cv2
 import numpy as np
 import tkinter as tk
 from PIL import Image, ImageTk
-from ..imageTransformation.rotateImage import rotate_image
-from ..fileHandling.loadImage import load_large_image
-
+from ifm_image_defect_detection.imagePreProcessing.imageTransformation.rotateImage import rotate_image
+from ifm_image_defect_detection.imagePreProcessing.fileHandling.loadImage import load_large_image
 
 def bmpToProbeOnly_rectangle(filename, scale_factor=0.1):
     """

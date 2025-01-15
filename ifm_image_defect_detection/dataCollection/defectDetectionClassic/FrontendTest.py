@@ -3,8 +3,8 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
 from threading import Thread
-from dataCollection.WiskersDetection import finishedSearchWhiskers
-from dataCollection.chippingDefectDetection import finishedSearchChipping
+from ifm_image_defect_detection.dataCollection.defectDetectionClassic.WiskersDetection import finishedSearchWhiskers
+
 
 
 # Main application window

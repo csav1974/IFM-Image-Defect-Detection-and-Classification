@@ -1,8 +1,8 @@
 import cv2 as cv
 import numpy as np
 import os
-import dataCollection.defectDetectionClassic.filemanagement as filemanagement
-from enumDefectTypes import DefectType
+import ifm_image_defect_detection.dataCollection.defectDetectionClassic.filemanagement as filemanagement
+from ifm_image_defect_detection.enumDefectTypes import DefectType
 
 
 # Load picture and transform to blurred gray

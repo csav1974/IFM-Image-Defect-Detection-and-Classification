@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import csv
 import os
-from defectHandling.calculate_mean_background import images_to_mean_noise as mean_noise
-from enumDefectTypes import DefectType
+from ifm_image_defect_detection.defectHandling.calculate_mean_background import images_to_mean_noise as mean_noise
+from ifm_image_defect_detection.enumDefectTypes import DefectType
 
 
 def mark_black_dots(image, threshold=0.1):

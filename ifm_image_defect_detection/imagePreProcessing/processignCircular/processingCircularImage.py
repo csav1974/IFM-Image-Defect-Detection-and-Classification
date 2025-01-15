@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from ..fileHandling.loadImage import load_large_image
+from ifm_image_defect_detection.imagePreProcessing.fileHandling.loadImage import load_large_image
 
 
 

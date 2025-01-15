@@ -1,6 +1,6 @@
 import cv2
 import os
-from enumDefectTypes import DefectType
+from ifm_image_defect_detection.enumDefectTypes import DefectType
 
 
 def saveDefectsFromList(image, image_name, data_list, patch_size, defect_type : DefectType):

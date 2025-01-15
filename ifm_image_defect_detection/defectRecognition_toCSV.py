@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 import os
 import time
-from csvHandling.writePredictionCSV import write_defect_data
+from ifm_image_defect_detection.csvHandling.writePredictionCSV import write_defect_data
 
 
 def defect_recognition_old(image_path=None, model_name=None):

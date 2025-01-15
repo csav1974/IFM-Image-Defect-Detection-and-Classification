@@ -1,4 +1,4 @@
-from enumDefectTypes import DefectType
+from ifm_image_defect_detection.enumDefectTypes import DefectType
 from shapely.geometry import Polygon
 
 

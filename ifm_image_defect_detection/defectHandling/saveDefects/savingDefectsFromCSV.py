@@ -1,7 +1,7 @@
 import cv2
 import os
-from enumDefectTypes import DefectType
-from csvHandling.readFromPredictionCSV import read_from_csv
+from ifm_image_defect_detection.enumDefectTypes import DefectType
+from ifm_image_defect_detection.csvHandling.readFromPredictionCSV import read_from_csv
 
 
 def safeDefectsFromCSV(image_path, csv_path):

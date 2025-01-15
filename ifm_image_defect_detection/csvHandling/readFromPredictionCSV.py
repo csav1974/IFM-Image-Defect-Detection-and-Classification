@@ -1,6 +1,5 @@
 import csv
-from enumDefectTypes import DefectType
-
+from ifm_image_defect_detection.enumDefectTypes import DefectType
 
 def read_from_csv(csv_path):
     data_list = []

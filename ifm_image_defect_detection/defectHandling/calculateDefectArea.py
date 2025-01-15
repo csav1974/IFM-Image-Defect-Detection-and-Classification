@@ -1,10 +1,10 @@
 import numpy as np
 import cv2
 import os
-from enumDefectTypes import DefectType
-from defectHandling.chippingDefectHandling import calculate_defect_map_chipping
-from defectHandling.whiskersDefectHandling import calculate_defect_map_whiskers
-from defectHandling.calculate_mean_background import list_to_mean_noise as mean_noise
+from ifm_image_defect_detection.enumDefectTypes import DefectType
+from ifm_image_defect_detection.defectHandling.chippingDefectHandling import calculate_defect_map_chipping
+from ifm_image_defect_detection.defectHandling.whiskersDefectHandling import calculate_defect_map_whiskers
+from ifm_image_defect_detection.defectHandling.calculate_mean_background import list_to_mean_noise as mean_noise
 
 
 def calculate_defect_area_fromList(image, data_list, patch_size = 32,):

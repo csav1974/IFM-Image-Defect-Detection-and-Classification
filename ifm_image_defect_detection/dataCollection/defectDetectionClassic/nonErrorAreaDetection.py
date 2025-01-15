@@ -1,5 +1,5 @@
 import cv2
-import dataCollection.defectDetectionClassic.filemanagement as filemanagement
+import ifm_image_defect_detection.dataCollection.defectDetectionClassic.filemanagement as filemanagement
 import tkinter as tk
 from PIL import Image, ImageTk
 

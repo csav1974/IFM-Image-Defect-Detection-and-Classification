@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 from shapely.geometry import Polygon
-from enumDefectTypes import DefectType
+from ifm_image_defect_detection.enumDefectTypes import DefectType
 
 def save_polygons_to_bmp(image, merged_polygons):
     """

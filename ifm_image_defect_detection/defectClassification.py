@@ -2,13 +2,13 @@ import numpy as np
 import cv2
 import os
 import tkinter as tk
-from csvHandling.readFromPredictionCSV import read_from_csv
-from defectHandling.saveDefects.saveDefectsFromList import saveDefectsFromList
-from enumDefectTypes import DefectType
-from defectHandling.calculateDefectArea import calculate_defect_area_fromList
-from defectHandling.calculateDefectCount import calculate_defect_count
-from defectHandling.saveDefectDataToCSV import save_results_to_CSV
-import pixelToRealWorld
+from ifm_image_defect_detection.csvHandling.readFromPredictionCSV import read_from_csv
+from ifm_image_defect_detection.defectHandling.saveDefects.saveDefectsFromList import saveDefectsFromList
+from ifm_image_defect_detection.enumDefectTypes import DefectType
+from ifm_image_defect_detection.defectHandling.calculateDefectArea import calculate_defect_area_fromList
+from ifm_image_defect_detection.defectHandling.calculateDefectCount import calculate_defect_count
+from ifm_image_defect_detection.defectHandling.saveDefectDataToCSV import save_results_to_CSV
+from ifm_image_defect_detection import pixelToRealWorld
 from shapely.geometry import Polygon, Point
 
 def main():

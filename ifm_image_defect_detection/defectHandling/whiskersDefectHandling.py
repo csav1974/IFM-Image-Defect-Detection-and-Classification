@@ -1,5 +1,5 @@
 import numpy as np
-from defectHandling.calculate_mean_background import images_to_mean_noise as mean_noise
+from ifm_image_defect_detection.defectHandling.calculate_mean_background import images_to_mean_noise as mean_noise
 import cv2
 
 def calculate_defect_map_whiskers(coordinates, image, threshold=0.05, patch_size=32, background_value=None):

@@ -1,7 +1,6 @@
 import os
 import csv
-from enumDefectTypes import DefectType
-
+from ifm_image_defect_detection.enumDefectTypes import DefectType
 
 def write_defect_data(filename, 
                       patch_size, 

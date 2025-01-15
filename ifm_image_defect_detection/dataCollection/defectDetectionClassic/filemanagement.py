@@ -1,6 +1,6 @@
 import os
 import cv2 as cv
-from enumDefectTypes import DefectType
+from ifm_image_defect_detection.enumDefectTypes import DefectType
 from PIL import Image
 import glob
 

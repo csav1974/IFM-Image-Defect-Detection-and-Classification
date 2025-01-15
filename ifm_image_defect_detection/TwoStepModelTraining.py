@@ -1,5 +1,5 @@
-from TwoStepModelTraining_step_one import train_and_save_model_binary
-from TwoStepModelTraining_step_two import train_and_save_model_classification
+from ifm_image_defect_detection.TwoStepModelTraining_step_one import train_and_save_model_binary
+from ifm_image_defect_detection.TwoStepModelTraining_step_two import train_and_save_model_classification
 
 
 def main():

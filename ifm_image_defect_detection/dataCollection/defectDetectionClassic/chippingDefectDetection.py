@@ -1,6 +1,6 @@
 import cv2 as cv
-import dataCollection.defectDetectionClassic.filemanagement as filemanagement
-from enumDefectTypes import DefectType
+import ifm_image_defect_detection.dataCollection.defectDetectionClassic.filemanagement as filemanagement
+from ifm_image_defect_detection.enumDefectTypes import DefectType
 
 
 def chippingDetection(filepath, folderpath, show_Image):
