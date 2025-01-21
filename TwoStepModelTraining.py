@@ -8,8 +8,8 @@ def main():
     """
 
     DATADIR = "dataCollection/Data/Perfect_Data"
-    model_name_binary = "Model_20241229_binary.keras"
-    model_name_classification = "Model_20241229_classification.keras"
+    model_name_binary = "Model_20250121_binary.keras"
+    model_name_classification = "Model_20250121_classification.keras"
     train_and_save_model_binary(DATADIR=DATADIR, model_name=model_name_binary)
     train_and_save_model_classification(DATADIR=DATADIR, model_name=model_name_classification)
 
