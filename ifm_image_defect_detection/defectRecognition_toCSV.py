@@ -128,8 +128,8 @@ def defect_recognition(image_path=None, model_name_1=None, model_name_2=None):
     start_time = time.time()  # Capture start time for this block
 
     # Load the first model
-    path_to_model_1 = os.path.join("kerasModels", model_name_1)
-    model_1 = tf.keras.models.load_model(f"{path_to_model_1}.keras")
+    # path_to_model_1 = os.path.join("kerasModels", model_name_1)
+    model_1 = tf.keras.models.load_model(model_name_1)
     
     end_time = time.time()  # Capture end time for this block
     print(f"Time for loading model 1: {end_time - start_time:.4f} seconds")
@@ -141,8 +141,8 @@ def defect_recognition(image_path=None, model_name_1=None, model_name_2=None):
     start_time = time.time()
     
     # Load the second model
-    path_to_model_2 = os.path.join("kerasModels", model_name_2)
-    model_2 = tf.keras.models.load_model(f"{path_to_model_2}.keras")
+    # path_to_model_2 = os.path.join("kerasModels", model_name_2)
+    model_2 = tf.keras.models.load_model(model_name_2)
     
     end_time = time.time()
     print(f"Time for loading model 2: {end_time - start_time:.4f} seconds")

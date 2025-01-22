@@ -8,15 +8,16 @@ def write_defect_data(filename,
                       data_list, 
                       defect_type : DefectType = None,
                       ):
-    image_name = os.path.splitext(os.path.split(filename)[-1])[0]
-    folder_name = os.path.join("predictionDataCSV", image_name)
+    # image_name = os.path.splitext(os.path.split(filename)[-1])[0]
+    # folder_name = os.path.join("predictionDataCSV", image_name)
+    path = os.path.splitext(filename)[0]
     if defect_type :
-        file_path = os.path.join(folder_name, f"{image_name}_{defect_type.value}.csv")
+        file_path = f"{path}_{defect_type.value}.csv"
     else :
-        file_path = os.path.join(folder_name, f"{image_name}_prediction.csv")
+        file_path = f"{path}_prediction.csv"
 
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
+    # if not os.path.exists(folder_name):
+    #     os.makedirs(folder_name)
 
     with open(file_path, mode="w", newline="") as file:
         writer = csv.writer(file)
