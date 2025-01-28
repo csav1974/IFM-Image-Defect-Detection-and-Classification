@@ -9,7 +9,7 @@ from defectHandling.calculate_mean_background import list_to_mean_noise as mean_
 
 def calculate_defect_area_fromList(image, data_list, patch_size = 32,):
 
-    save_image = False
+    save_image = True
 
     defect_maps = []
     mean_background_value = mean_noise(image, data_list[-1][0][:1000], patch_size) # data_list[-1][0] is a array with all no_defect positions
@@ -60,11 +60,11 @@ def list_to_defect_map(image, patch_size, data_list, defect_type, background_val
     if (defect_type == DefectType.CHIPPING 
         or defect_type == DefectType.SCRATCHES) :
         defect_map = calculate_defect_map_chipping(
-            data_list, image, threshold=0.55, patch_size=patch_size
+            data_list, image, threshold=0.65, patch_size=patch_size
         )       
     if defect_type == DefectType.WHISKERS:
         defect_map = calculate_defect_map_whiskers(
-            data_list, image, threshold=0.17, patch_size=patch_size, background_value=background_value
+            data_list, image, threshold=0.2, patch_size=patch_size, background_value=background_value
         )
 
     return defect_map, num_non_probe_area
@@ -78,7 +78,7 @@ def save_image_with_defects(maps, image):
         if (map[1] == DefectType.WHISKERS):
             image[mask] = (255, 0, 0)
         if (map[1] == DefectType.SCRATCHES):
-            image[mask] = (0, 255, 255)
+            image[mask] = (0, 255, 0)
 
 
     # # scales Picture for output
