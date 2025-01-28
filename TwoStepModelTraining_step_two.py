@@ -436,7 +436,7 @@ def train_and_save_model_classification_new(
     model.compile(
         loss="sparse_categorical_crossentropy",
         optimizer=keras.optimizers.Adam(learning_rate=1e-4),
-        metrics=["accuracy", "categorical_accuracy"]
+        metrics=["sparse_categorical_accuracy"]
     )
 
     # 11. Define callbacks
