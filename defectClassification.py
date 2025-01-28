@@ -12,7 +12,7 @@ import pixelToRealWorld
 from shapely.geometry import Polygon, Point
 
 def main():
-    work_folder_path = 'predictionDataCSV/FLEXPECS_CIGS_T28'
+    work_folder_path = 'predictionDataCSV/HZB_CIGS_4-4304-50-4-N'
     safeImagesBoolean = False # only for testing right now
 
     sample_name = os.path.split(work_folder_path)[-1]
@@ -173,16 +173,27 @@ def main():
         defect_data = calculate_defect_area_fromList(image, data_list_with_defectType, patch_size)
     
         # Convert defect data to mm
-
-        # check if xm file for image is present. If not take default resolution of our IFM
+        # check if xml file for image is present. If not take default resolution of our IFM
 
         defect_data_mm = []
         for data in defect_data[:5]:
             defect_data_mm.append(pixelToRealWorld.pixel_to_square_mm(data, pixel_to_mm_factor * pixel_to_mm_factor))
         defect_data_mm.append(defect_data[-1])
 
+
+        # get data that will be safed to csv
         whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio = defect_data_mm
-        save_results_to_CSV(work_folder_path, whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio, whiskers_count, chipping_count)
+        whisker_centroids = []
+        chipping_centroids = []
+        for item in merged_polygons:
+            x_pixel, y_pixel = item['centroid']
+            x_mm = round(pixelToRealWorld.pixel_to_mm(x_pixel, pixel_to_mm_factor), 1)
+            y_mm = round(pixelToRealWorld.pixel_to_mm(y_pixel, pixel_to_mm_factor), 1)
+            if item['defect_type'] == DefectType.WHISKERS :
+                whisker_centroids.append((x_mm, y_mm))
+            if item['defect_type'] == DefectType.CHIPPING :
+                chipping_centroids.append((x_mm, y_mm))
+        save_results_to_CSV(work_folder_path, whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio, whiskers_count, chipping_count, whiskers_positions=whisker_centroids, chipping_positions=chipping_centroids)
 
         def create_data_window(defect_data, unit_of_measurement = "mm²"):
 
@@ -247,9 +258,14 @@ def main():
             # Merge overlapping polygons
             merged = merge_overlapping_polygons(polygons)
 
+            # safe center of polygon
+            centroids = []
+            for poly in merged:
+                c = poly.centroid
+                centroids.append((c.x, c.y))
             # Add to merged_polygons with color
             for poly in merged:
-                merged_polygons.append({'polygon': poly, 'color': color, 'defect_type': defect_type})
+                merged_polygons.append({'polygon': poly, 'color': color, 'defect_type': defect_type, 'centroid': (poly.centroid.x, poly.centroid.y)})
 
         print("Merged overlapping rectangles into polygons.")
 
