@@ -386,9 +386,9 @@ def defect_recognition(image_path=None, model_name_1=None, model_name_2=None):
 
 def main():
     defect_recognition(
-        image_path="predictionDataCSV/Flexpecs_Cigs_T26/Flexpecs_Cigs_T26.bmp", 
-        model_name_1="Model_20241229_firstStep",     # Binary model (No_Error / Error)
-        model_name_2="Model_20241229_secondStep"     # Three-class model (Whiskers, Chipping, Scratches)
+        image_path="predictionDataCSV/HZB_CIGS_4-4304-50-4-N/HZB_CIGS_4-4304-50-4-N.bmp", 
+        model_name_1="Model_20250128_binary",     # Binary model (No_Error / Error)
+        model_name_2="Model_20250128_classification"     # Three-class model (Whiskers, Chipping, Scratches)
     )
 
 if __name__ == "__main__":
