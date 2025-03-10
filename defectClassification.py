@@ -5,14 +5,14 @@ import tkinter as tk
 from csvHandling.readFromPredictionCSV import read_from_csv
 from defectHandling.saveDefects.saveDefectsFromList import saveDefectsFromList
 from enumDefectTypes import DefectType
-from defectHandling.calculateDefectArea import calculate_defect_area_fromList
-from defectHandling.calculateDefectCount import calculate_defect_count
+from defectHandling.calculateDefectArea import calculate_defect_area_and_count_fromList
+# from defectHandling.calculateDefectCount import calculate_defect_count
 from defectHandling.saveDefectDataToCSV import save_results_to_CSV
 import pixelToRealWorld
 from shapely.geometry import Polygon, Point
 
 def main():
-    work_folder_path = 'predictionDataCSV/HZB_CIGS_4-4304-50-4-N'
+    work_folder_path = 'predictionDataCSV/20241024_A2-1'
     safeImagesBoolean = False # only for testing right now
 
     sample_name = os.path.split(work_folder_path)[-1]
@@ -166,23 +166,38 @@ def main():
         data_list_with_defectType.append([[(x, y, predictions) for x, y, predictions in data_list if predictions[3] > no_error_th], DefectType.NO_ERROR])
 
 
-        whiskers_count = calculate_defect_count(merged_polygons, DefectType.WHISKERS)
-        chipping_count = calculate_defect_count(merged_polygons, DefectType.CHIPPING)        
+        # whiskers_count = calculate_defect_count(merged_polygons, DefectType.WHISKERS)
+        # chipping_count = calculate_defect_count(merged_polygons, DefectType.CHIPPING)        
 
-        # Calculate defect area
-        defect_data = calculate_defect_area_fromList(image, data_list_with_defectType, patch_size)
-    
+
+        defect_data = calculate_defect_area_and_count_fromList(image, data_list_with_defectType, patch_size, polygon_data=merged_polygons)
+
         # Convert defect data to mm
         # check if xml file for image is present. If not take default resolution of our IFM
+        defect_data_mm = {}
 
-        defect_data_mm = []
-        for data in defect_data[:5]:
-            defect_data_mm.append(pixelToRealWorld.pixel_to_square_mm(data, pixel_to_mm_factor * pixel_to_mm_factor))
-        defect_data_mm.append(defect_data[-1])
+        # get data that will be converted to mm
+        for key in ['whiskers_area', 'chipping_area', 'scratches_area', 'num_zeros', 'num_ones']:
+            defect_data_mm[key] = pixelToRealWorld.pixel_to_square_mm(
+                defect_data[key], pixel_to_mm_factor * pixel_to_mm_factor
+            )
+
+        # no need to convert ratio and counts
+        defect_data_mm['ratio'] = defect_data['ratio']
+        defect_data_mm['whiskers_count'] = defect_data['whiskers_count']
+        defect_data_mm['chipping_count'] = defect_data['chipping_count']
+
+        # get datat that will be saved to csv
+        whiskers_area  = defect_data_mm['whiskers_area']
+        whiskers_count = defect_data_mm["whiskers_count"]
+        chipping_area  = defect_data_mm['chipping_area']
+        chipping_count = defect_data_mm["chipping_count"]
+        scratches_area = defect_data_mm['scratches_area']
+        defect_pixel   = defect_data_mm['num_zeros']
+        working_pixel  = defect_data_mm['num_ones']
+        ratio          = defect_data_mm['ratio']
 
 
-        # get data that will be safed to csv
-        whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio = defect_data_mm
         whisker_centroids = []
         chipping_centroids = []
         for item in merged_polygons:
@@ -197,7 +212,14 @@ def main():
 
         def create_data_window(defect_data, unit_of_measurement = "mm²"):
 
-            whiskers_area, chipping_area, scratches_area, defect_pixel, working_pixel, ratio = defect_data
+            whiskers_area  = defect_data['whiskers_area']
+            whiskers_count = defect_data["whiskers_count"]
+            chipping_area  = defect_data['chipping_area']
+            chipping_count = defect_data["chipping_count"]
+            scratches_area = defect_data['scratches_area']
+            defect_pixel   = defect_data['num_zeros']
+            working_pixel  = defect_data['num_ones']
+            ratio          = defect_data['ratio']
 
             # Create a tkinter window to display the results
             root = tk.Tk()

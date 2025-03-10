@@ -5,6 +5,7 @@ from enumDefectTypes import DefectType
 from defectHandling.chippingDefectHandling import calculate_defect_map_chipping
 from defectHandling.whiskersDefectHandling import calculate_defect_map_whiskers
 from defectHandling.calculate_mean_background import list_to_mean_noise as mean_noise
+from defectHandling.calculateDefectCount import calculate_defect_count_new
 
 
 def calculate_defect_area_fromList(image, data_list, patch_size = 32,):
@@ -51,6 +52,64 @@ def calculate_defect_area_fromList(image, data_list, patch_size = 32,):
 
 
     return whiskers_area, chipping_area, scratches_area, num_zeros, num_ones, ratio
+
+
+
+def calculate_defect_area_and_count_fromList(image, data_list, patch_size=32, polygon_data=[]):
+    save_image = True
+
+    defect_maps = []
+    mean_background_value = mean_noise(image, data_list[-1][0][:1000], patch_size)  # data_list[-1][0] is a Array with all no_error patches
+    data_list.pop(-1)
+    
+    
+    whiskers_area = None
+    chipping_area = None
+    scratches_area = None
+
+    for defect_list, defect_type in data_list:
+        defect_map, num_non_probe_area = list_to_defect_map(
+            image=image, patch_size=patch_size, data_list=defect_list,
+            defect_type=defect_type, background_value=mean_background_value
+        )
+        if defect_type == DefectType.CHIPPING:
+            chipping_count = calculate_defect_count_new(polygon_data=polygon_data, defect_type=defect_type, defect_map=[])
+            chipping_area = np.sum(defect_map == 0)
+        if defect_type == DefectType.WHISKERS:
+            whiskers_count = calculate_defect_count_new(polygon_data=polygon_data, defect_type=defect_type, defect_map=defect_map)
+            whiskers_area = np.sum(defect_map == 0)
+        if defect_type == DefectType.SCRATCHES:
+            scratches_area = np.sum(defect_map == 0)
+        defect_maps.append((defect_map, defect_type))
+
+    only_defect_maps = [defect_map for defect_map, _ in defect_maps]
+    stacked_maps = np.stack(only_defect_maps, axis=0)
+    combined_map = np.all(stacked_maps == 1, axis=0).astype(int)
+
+    num_zeros = np.sum(combined_map == 0)
+    num_ones = np.sum(combined_map == 1) - num_non_probe_area
+
+    # calculate defect ratio
+    if num_ones == 0:
+        ratio = float("inf")
+    else:
+        ratio = (num_zeros / num_ones) * 100
+
+    print_results(num_zeros, num_ones, ratio)
+
+    if save_image:
+        save_image_with_defects(defect_maps, image)
+
+    return {
+        "whiskers_area": whiskers_area,
+        "whiskers_count": whiskers_count,
+        "chipping_area": chipping_area,
+        "chipping_count": chipping_count,
+        "scratches_area": scratches_area,
+        "num_zeros": num_zeros,
+        "num_ones": num_ones,
+        "ratio": ratio
+    }
 
 def list_to_defect_map(image, patch_size, data_list, defect_type, background_value):
 
